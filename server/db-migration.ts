@@ -46,15 +46,15 @@ export async function migrateFromPostgresToMongo() {
     for (const listing of listings) {
       try {
         // Find the MongoDB user ID for this listing
-        const userEmail = (await pgStorage.getUser(listing.userId))?.email;
-        if (!userEmail) {
+        const user = await pgStorage.getUser(listing.userId);
+        if (!user || !user.email) {
           log(`Cannot find user for listing ${listing.id}`, 'migration');
           continue;
         }
         
-        const mongoUser = await mongoStorage.getUserByEmail(userEmail);
+        const mongoUser = await mongoStorage.getUserByEmail(user.email);
         if (!mongoUser) {
-          log(`Cannot find MongoDB user for email ${userEmail}`, 'migration');
+          log(`Cannot find MongoDB user for email ${user.email}`, 'migration');
           continue;
         }
 
@@ -92,20 +92,32 @@ export async function migrateFromPostgresToMongo() {
     for (const booking of bookings) {
       try {
         // Find MongoDB IDs for user and listing
-        const userEmail = (await pgStorage.getUser(booking.userId))?.email;
-        if (!userEmail) continue;
+        const user = await pgStorage.getUser(booking.userId);
+        if (!user || !user.email) {
+          log(`Cannot find user for booking ${booking.id}`, 'migration');
+          continue;
+        }
         
-        const mongoUser = await mongoStorage.getUserByEmail(userEmail);
-        if (!mongoUser) continue;
+        const mongoUser = await mongoStorage.getUserByEmail(user.email);
+        if (!mongoUser) {
+          log(`Cannot find MongoDB user for email ${user.email}`, 'migration');
+          continue;
+        }
 
         // For the van listing, need to find by title or similar attributes
         const pgListing = await pgStorage.getVanListing(booking.vanListingId);
-        if (!pgListing) continue;
+        if (!pgListing) {
+          log(`Cannot find listing for booking ${booking.id}`, 'migration');
+          continue;
+        }
         
         // Find the MongoDB listing that matches this one
         const mongoListings = await mongoStorage.getVanListings();
         const mongoListing = mongoListings.find(l => l.title === pgListing.title);
-        if (!mongoListing) continue;
+        if (!mongoListing) {
+          log(`Cannot find matching MongoDB listing for "${pgListing.title}"`, 'migration');
+          continue;
+        }
 
         await mongoStorage.createBooking({
           userId: mongoUser._id,
@@ -130,18 +142,30 @@ export async function migrateFromPostgresToMongo() {
     for (const review of reviews) {
       try {
         // Find MongoDB IDs for user and listing
-        const userEmail = (await pgStorage.getUser(review.userId))?.email;
-        if (!userEmail) continue;
+        const user = await pgStorage.getUser(review.userId);
+        if (!user || !user.email) {
+          log(`Cannot find user for review ${review.id}`, 'migration');
+          continue;
+        }
         
-        const mongoUser = await mongoStorage.getUserByEmail(userEmail);
-        if (!mongoUser) continue;
+        const mongoUser = await mongoStorage.getUserByEmail(user.email);
+        if (!mongoUser) {
+          log(`Cannot find MongoDB user for email ${user.email}`, 'migration');
+          continue;
+        }
 
         const pgListing = await pgStorage.getVanListing(review.vanListingId);
-        if (!pgListing) continue;
+        if (!pgListing) {
+          log(`Cannot find listing for review ${review.id}`, 'migration');
+          continue;
+        }
         
         const mongoListings = await mongoStorage.getVanListings();
         const mongoListing = mongoListings.find(l => l.title === pgListing.title);
-        if (!mongoListing) continue;
+        if (!mongoListing) {
+          log(`Cannot find matching MongoDB listing for "${pgListing.title}"`, 'migration');
+          continue;
+        }
 
         await mongoStorage.createReview({
           userId: mongoUser._id,

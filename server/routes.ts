@@ -430,6 +430,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin route for migration
+  app.post("/api/admin/migrate", async (req, res, next) => {
+    try {
+      // Check if we have a migration secret and it matches
+      const { migrationSecret } = req.body;
+      const expectedSecret = process.env.MIGRATION_SECRET || 'default-migration-secret';
+      
+      if (migrationSecret !== expectedSecret) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Try to run the migration
+      try {
+        const { migrateFromPostgresToMongo } = await import('./db-migration');
+        const success = await migrateFromPostgresToMongo();
+        if (success) {
+          res.json({ message: "Migration completed successfully!" });
+        } else {
+          res.status(500).json({ message: "Migration did not complete successfully." });
+        }
+      } catch (error) {
+        console.error('Error during migration:', error);
+        res.status(500).json({ message: `Migration error: ${error.message}` });
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Create HTTP server
   const httpServer = createServer(app);
   
