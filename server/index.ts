@@ -38,8 +38,18 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize MongoDB connection
-  await initializeDatabase();
+  // Try to initialize MongoDB connection, fallback to PostgreSQL if needed
+  try {
+    const mongoConnected = await initializeDatabase();
+    if (!mongoConnected) {
+      console.log('MongoDB connection failed. The application will use PostgreSQL storage instead.');
+    } else {
+      console.log('MongoDB connection successful. The application will use MongoDB storage.');
+    }
+  } catch (error) {
+    console.error('Error initializing database:', error);
+    console.log('Falling back to PostgreSQL storage.');
+  }
   
   const server = await registerRoutes(app);
 

@@ -1,7 +1,14 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { insertUserSchema, insertVanListingSchema, insertBookingSchema, insertReviewSchema, loginSchema } from "@shared/schema";
+import { getStorage } from "./storage-factory";
+import { 
+  userValidationSchema as insertUserSchema, 
+  vanListingValidationSchema as insertVanListingSchema, 
+  bookingValidationSchema as insertBookingSchema, 
+  reviewValidationSchema as insertReviewSchema, 
+  loginValidationSchema as loginSchema 
+} from "../shared/mongodb-schema";
+import * as pgSchema from "../shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -11,6 +18,9 @@ import { Strategy as LocalStrategy } from "passport-local";
 const SessionStore = MemoryStore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Get the appropriate storage implementation based on available database
+  const storage = getStorage();
+
   // Set up session management
   app.use(
     session({
@@ -60,10 +70,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serialize and deserialize user
   passport.serializeUser((user: any, done) => {
-    done(null, user.id);
+    // Handle both MongoDB (_id) and PostgreSQL (id) formats
+    done(null, user._id || user.id);
   });
   
-  passport.deserializeUser(async (id: number, done) => {
+  passport.deserializeUser(async (id: any, done) => {
     try {
       const user = await storage.getUser(id);
       if (!user) {
@@ -198,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get a specific van listing
   app.get("/api/van-listings/:id", async (req, res, next) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // No need to parse, can use string ID with MongoDB
       const listing = await storage.getVanListing(id);
       
       if (!listing) {
@@ -247,7 +258,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/van-listings/:id", isAuthenticated, async (req, res, next) => {
     try {
       const user = req.user as any;
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // No need to parse for MongoDB
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
       
       // Check if the listing exists
       const listing = await storage.getVanListing(id);
@@ -256,7 +268,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if the user owns the listing
-      if (listing.userId !== user.id) {
+      // For MongoDB, we need to compare the string representation or IDs
+      const listingUserId = listing.userId.toString ? listing.userId.toString() : listing.userId;
+      const userIdStr = userId.toString ? userId.toString() : userId;
+      if (listingUserId !== userIdStr) {
         return res.status(403).json({ message: "You don't have permission to update this listing" });
       }
       
@@ -300,7 +315,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/my-listings", isAuthenticated, async (req, res, next) => {
     try {
       const user = req.user as any;
-      const listings = await storage.getVanListingsByUser(user.id);
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
+      const listings = await storage.getVanListingsByUser(userId);
       res.json(listings);
     } catch (error) {
       next(error);
@@ -311,11 +327,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bookings", isAuthenticated, async (req, res, next) => {
     try {
       const user = req.user as any;
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
       
       // Validate the input data
       const data = insertBookingSchema.parse({
         ...req.body,
-        userId: user.id
+        userId: userId
       });
       
       // Check if the van listing exists
@@ -338,7 +355,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/my-bookings", isAuthenticated, async (req, res, next) => {
     try {
       const user = req.user as any;
-      const bookings = await storage.getBookingsByUser(user.id);
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
+      const bookings = await storage.getBookingsByUser(userId);
       res.json(bookings);
     } catch (error) {
       next(error);
