@@ -1,14 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { getStorage } from "./storage-factory";
-import { 
-  userValidationSchema as insertUserSchema, 
-  vanListingValidationSchema as insertVanListingSchema, 
-  bookingValidationSchema as insertBookingSchema, 
-  reviewValidationSchema as insertReviewSchema, 
-  loginValidationSchema as loginSchema 
-} from "../shared/mongodb-schema";
-import * as pgSchema from "../shared/schema";
+import { getStorage, getSchemas } from "./storage-factory";
 import { z } from "zod";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -109,7 +101,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Login route
   app.post("/api/login", (req, res, next) => {
     try {
-      const data = loginSchema.parse(req.body);
+      // Get the appropriate schema based on which database is in use
+      const schemas = getSchemas();
+      const data = schemas.loginSchema.parse(req.body);
       
       passport.authenticate("local", (err, user, info) => {
         if (err) {
@@ -136,7 +130,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register route
   app.post("/api/register", async (req, res, next) => {
     try {
-      const data = insertUserSchema.parse(req.body);
+      // Get the appropriate schema based on which database is in use
+      const schemas = getSchemas();
+      const data = schemas.insertUserSchema.parse(req.body);
       
       // Check if email already exists
       const existingUser = await storage.getUserByEmail(data.email);

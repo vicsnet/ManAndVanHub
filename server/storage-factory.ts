@@ -42,7 +42,28 @@ export function usingMongoDB(): boolean {
 
 /**
  * Get the appropriate schema for validation based on the database in use
+ * This normalizes the schema names between MongoDB and PostgreSQL
  */
 export function getSchemas() {
-  return usingMongoDB() ? mongoSchema : pgSchema;
+  if (usingMongoDB()) {
+    return {
+      // Map MongoDB schema names to a consistent interface
+      insertUserSchema: mongoSchema.userValidationSchema,
+      insertVanListingSchema: mongoSchema.vanListingValidationSchema,
+      insertServiceSchema: mongoSchema.serviceValidationSchema, 
+      insertBookingSchema: mongoSchema.bookingValidationSchema,
+      insertReviewSchema: mongoSchema.reviewValidationSchema,
+      loginSchema: mongoSchema.loginValidationSchema
+    };
+  } else {
+    return {
+      // Map PostgreSQL schema names
+      insertUserSchema: pgSchema.insertUserSchema,
+      insertVanListingSchema: pgSchema.insertVanListingSchema, 
+      insertServiceSchema: pgSchema.insertServiceSchema,
+      insertBookingSchema: pgSchema.insertBookingSchema,
+      insertReviewSchema: pgSchema.insertReviewSchema,
+      loginSchema: pgSchema.loginSchema
+    };
+  }
 }
