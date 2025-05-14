@@ -112,9 +112,9 @@ const Register = () => {
       <div className="min-h-screen bg-slate-50 py-12">
         <div className="container max-w-md mx-auto px-4">
           <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
-              <CardDescription className="text-center">
+            <CardHeader className="space-y-1 text-center bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-t-lg">
+              <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
+              <CardDescription className="text-slate-100">
                 {fromDriver 
                   ? "Sign up to list your van and start earning" 
                   : "Enter your details to create a new account"}
@@ -279,7 +279,7 @@ const Register = () => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full" 
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800" 
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating account..." : "Create Account"}
