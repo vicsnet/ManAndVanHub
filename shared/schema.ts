@@ -76,10 +76,18 @@ export const insertServiceSchema = createInsertSchema(services).omit({
   id: true,
 });
 
-export const insertBookingSchema = createInsertSchema(bookings).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertBookingSchema = createInsertSchema(bookings)
+  .omit({
+    id: true,
+    createdAt: true,
+  })
+  .extend({
+    // Modify the bookingDate field to transform string to date
+    bookingDate: z.union([
+      z.date(),
+      z.string().transform((str) => new Date(str))
+    ]),
+  });
 
 export const insertReviewSchema = createInsertSchema(reviews).omit({
   id: true,

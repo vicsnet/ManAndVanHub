@@ -138,7 +138,10 @@ export const serviceValidationSchema = z.object({
 export const bookingValidationSchema = z.object({
   userId: z.string(),
   vanListingId: z.string(),
-  bookingDate: z.date(),
+  bookingDate: z.union([
+    z.date(),
+    z.string().transform((str) => new Date(str))
+  ]),
   duration: z.number().positive(),
   fromLocation: z.string().min(5),
   toLocation: z.string().min(5),
