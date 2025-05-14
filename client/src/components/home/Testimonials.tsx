@@ -30,7 +30,7 @@ const Testimonials = () => {
 
     // Add full stars
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<StarIcon key={`star-${i}`} className="fill-accent text-accent h-4 w-4" />);
+      stars.push(<StarIcon key={`star-${i}`} className="fill-yellow-400 text-yellow-400 h-4 w-4" />);
     }
 
     // Add half star if needed
@@ -40,7 +40,7 @@ const Testimonials = () => {
           key="half-star"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
-          className="h-4 w-4 text-accent"
+          className="h-4 w-4 text-yellow-400"
           fill="none"
         >
           <path
@@ -74,7 +74,7 @@ const Testimonials = () => {
     <section className="py-12 md:py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-secondary mb-4">What Our Customers Say</h2>
+          <h2 className="text-3xl font-bold text-secondary-foreground mb-4">What Our Customers Say</h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
             Real experiences from people who have used Man & Van services.
           </p>

@@ -32,7 +32,7 @@ const ServiceTypes = () => {
     <section className="py-12 md:py-16 bg-white" id="services">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-secondary mb-4">Our Services</h2>
+          <h2 className="text-3xl font-bold text-secondary-foreground mb-4">Our Services</h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
             From furniture delivery to full house moves, our van drivers provide a wide range of
             services.

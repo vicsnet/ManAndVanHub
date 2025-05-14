@@ -34,7 +34,7 @@ const FaqSection = () => {
     <section className="py-12 md:py-16 bg-slate-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-secondary mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-secondary-foreground mb-4">Frequently Asked Questions</h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
             Find answers to common questions about using Man & Van services.
           </p>
@@ -44,7 +44,7 @@ const FaqSection = () => {
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`faq-${index}`} className="bg-white rounded-lg shadow-sm">
-                <AccordionTrigger className="text-lg font-semibold text-secondary p-5">
+                <AccordionTrigger className="text-lg font-semibold text-secondary-foreground p-5">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="p-5 pt-0 text-slate-600 border-t border-slate-100">
