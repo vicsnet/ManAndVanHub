@@ -8,7 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu } from "lucide-react";
+import { User, Menu, MessageSquare } from "lucide-react";
+import { UnreadMessagesIndicator } from "@/components/chat";
 
 const Navbar = () => {
   const [location] = useLocation();
@@ -67,16 +68,24 @@ const Navbar = () => {
                     <DropdownMenuItem asChild>
                       <Link href="/profile">Profile</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/my-bookings">My Bookings</Link>
+                    <DropdownMenuItem asChild className="relative">
+                      <Link href="/my-bookings" className="flex items-center">
+                        <span className="mr-1">My Bookings</span>
+                        <MessageSquare className="h-3.5 w-3.5 ml-1 opacity-70" />
+                        <UnreadMessagesIndicator className="absolute -right-1 -top-1" />
+                      </Link>
                     </DropdownMenuItem>
                     {user.isVanOwner && (
                       <>
                         <DropdownMenuItem asChild>
                           <Link href="/my-listings">My Listings</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/manage-bookings">Manage Bookings</Link>
+                        <DropdownMenuItem asChild className="relative">
+                          <Link href="/manage-bookings" className="flex items-center">
+                            <span className="mr-1">Manage Bookings</span>
+                            <MessageSquare className="h-3.5 w-3.5 ml-1 opacity-70" />
+                            <UnreadMessagesIndicator className="absolute -right-1 -top-1" />
+                          </Link>
                         </DropdownMenuItem>
                       </>
                     )}
@@ -140,10 +149,14 @@ const Navbar = () => {
                 </Link>
                 <Link
                   href="/my-bookings"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100 relative"
                   onClick={closeMobileMenu}
                 >
-                  My Bookings
+                  <div className="flex items-center">
+                    <span>My Bookings</span>
+                    <MessageSquare className="h-3.5 w-3.5 ml-1 opacity-70" />
+                    <UnreadMessagesIndicator className="absolute top-1 right-10" />
+                  </div>
                 </Link>
                 {user.isVanOwner && (
                   <>
@@ -156,10 +169,14 @@ const Navbar = () => {
                     </Link>
                     <Link
                       href="/manage-bookings"
-                      className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100 relative"
                       onClick={closeMobileMenu}
                     >
-                      Manage Bookings
+                      <div className="flex items-center">
+                        <span>Manage Bookings</span>
+                        <MessageSquare className="h-3.5 w-3.5 ml-1 opacity-70" />
+                        <UnreadMessagesIndicator className="absolute top-1 right-10" />
+                      </div>
                     </Link>
                   </>
                 )}

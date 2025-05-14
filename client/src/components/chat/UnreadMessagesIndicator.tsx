@@ -12,7 +12,7 @@ const UnreadMessagesIndicator = ({ className = '' }: UnreadMessagesIndicatorProp
   const [hasUnread, setHasUnread] = useState(false);
   
   // Query for unread messages count
-  const { data } = useQuery({
+  const { data } = useQuery<{ count: number }>({
     queryKey: ['/api/messages/unread-count'],
     enabled: !!user,
     refetchInterval: 30000, // Check every 30 seconds
