@@ -224,9 +224,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user as any;
       
       // Validate the input data
-      const data = insertVanListingSchema.parse({
+      const schemas = getSchemas();
+      const data = schemas.insertVanListingSchema.parse({
         ...req.body,
-        userId: user.id
+        userId: user._id || user.id // Support both MongoDB and PostgreSQL
       });
       
       const listing = await storage.createVanListing(data);
@@ -330,7 +331,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
       
       // Validate the input data
-      const data = insertBookingSchema.parse({
+      const schemas = getSchemas();
+      const data = schemas.insertBookingSchema.parse({
         ...req.body,
         userId: userId
       });
@@ -406,9 +408,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user as any;
       
       // Validate the input data
-      const data = insertReviewSchema.parse({
+      const schemas = getSchemas();
+      const data = schemas.insertReviewSchema.parse({
         ...req.body,
-        userId: user.id
+        userId: user._id || user.id // Support both MongoDB and PostgreSQL
       });
       
       // Check if the van listing exists
