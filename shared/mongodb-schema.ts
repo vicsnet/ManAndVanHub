@@ -8,6 +8,8 @@ export interface UserDocument extends Document {
   password: string;
   fullName: string;
   isVanOwner: boolean;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,6 +69,8 @@ const userSchema = new Schema<UserDocument>({
   password: { type: String, required: true },
   fullName: { type: String, required: true },
   isVanOwner: { type: Boolean, default: false },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

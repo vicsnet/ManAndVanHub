@@ -180,18 +180,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email is required" });
       }
       
-      // In a real implementation, you would:
-      // 1. Check if user exists
+      // Find user with this email
       const user = await storage.getUserByEmail(email);
       
-      // 2. Generate a token - In a real app, use a secure random token
-      // 3. Store the token with expiration in the database
-      // 4. Send an email with a link to reset password
+      if (user) {
+        // Generate a token (using a simple random string - in production, use a proper library)
+        const token = Math.random().toString(36).substring(2, 15) + 
+                     Math.random().toString(36).substring(2, 15);
+        
+        // Create a token expiration time (24 hours from now)
+        const expiration = new Date();
+        expiration.setHours(expiration.getHours() + 24);
+        
+        // Store the token in the user's document
+        await storage.storePasswordResetToken(user._id || user.id, token, expiration);
+        
+        // In a real application, you would send an email with this link
+        console.log(`Password reset link: ${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${token}`);
+      }
       
-      // For now, we'll simulate success
-      // We still return 200 even if the email doesn't exist to prevent email enumeration
+      // Always return 200 even if user doesn't exist (prevent email enumeration)
       return res.status(200).json({ 
-        message: "If an account with that email exists, a password reset link has been sent." 
+        message: "If an account with that email exists, a password reset link has been sent."
       });
     } catch (error) {
       next(error);
@@ -207,11 +217,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Token is required" });
       }
       
-      // In a real implementation, you would:
-      // 1. Check if the token exists in the database
-      // 2. Check if the token is expired
+      // Verify the token in database
+      const isValid = await storage.verifyPasswordResetToken(token as string);
       
-      // For now, we'll simulate a valid token for demo purposes
+      if (!isValid) {
+        return res.status(400).json({ 
+          message: "Invalid or expired token", 
+          valid: false 
+        });
+      }
+      
       return res.status(200).json({ valid: true });
     } catch (error) {
       next(error);
@@ -227,13 +242,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Token and password are required" });
       }
       
-      // In a real implementation, you would:
-      // 1. Verify the token again
-      // 2. Find the user associated with the token
-      // 3. Update the user's password
-      // 4. Remove the used token
+      // Verify the token one more time
+      const isValid = await storage.verifyPasswordResetToken(token);
       
-      // For demo purposes, we'll simulate success
+      if (!isValid) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+      
+      // Get the user associated with this token
+      const user = await storage.getUserByResetToken(token);
+      
+      if (!user) {
+        return res.status(400).json({ message: "User not found" });
+      }
+      
+      // Update the password
+      await storage.updateUserPassword(user._id || user.id, password);
+      
+      // Clear the used token
+      await storage.clearPasswordResetToken(user._id || user.id);
+      
       return res.status(200).json({ message: "Password has been reset successfully" });
     } catch (error) {
       next(error);
