@@ -39,12 +39,29 @@ app.use((req, res, next) => {
 
 (async () => {
   // Try to initialize MongoDB connection, fallback to PostgreSQL if needed
+  let mongoConnected = false;
   try {
-    const mongoConnected = await initializeDatabase();
+    mongoConnected = await initializeDatabase();
     if (!mongoConnected) {
       console.log('MongoDB connection failed. The application will use PostgreSQL storage instead.');
     } else {
       console.log('MongoDB connection successful. The application will use MongoDB storage.');
+      
+      // If we're connected to MongoDB, check if we need to migrate data
+      if (process.env.MIGRATE_DATA === 'true') {
+        try {
+          const { migrateFromPostgresToMongo } = await import('./db-migration');
+          console.log('Starting data migration from PostgreSQL to MongoDB...');
+          const migrationSuccess = await migrateFromPostgresToMongo();
+          if (migrationSuccess) {
+            console.log('Data migration completed successfully!');
+          } else {
+            console.log('Data migration did not complete successfully.');
+          }
+        } catch (migrationError) {
+          console.error('Error during data migration:', migrationError);
+        }
+      }
     }
   } catch (error) {
     console.error('Error initializing database:', error);

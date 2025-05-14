@@ -18,7 +18,7 @@ import {
   type VanListingWithDetails
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, like, desc, sql, and, or } from "drizzle-orm";
+import { eq, like, desc, sql, and, or, asc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -67,6 +67,10 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(users).values(insertUser).returning();
     return result[0];
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(asc(users.id));
   }
 
   // Van listing methods
@@ -237,6 +241,10 @@ export class DatabaseStorage implements IStorage {
   async getBookingsByVanListing(vanListingId: number): Promise<Booking[]> {
     return db.select().from(bookings).where(eq(bookings.vanListingId, vanListingId));
   }
+  
+  async getAllBookings(): Promise<Booking[]> {
+    return db.select().from(bookings).orderBy(asc(bookings.id));
+  }
 
   async updateBookingStatus(id: number, status: string): Promise<Booking | undefined> {
     const result = await db.update(bookings)
@@ -256,6 +264,10 @@ export class DatabaseStorage implements IStorage {
   async getReviewsByVanListing(vanListingId: number): Promise<Review[]> {
     return db.select().from(reviews).where(eq(reviews.vanListingId, vanListingId))
       .orderBy(desc(reviews.createdAt));
+  }
+  
+  async getAllReviews(): Promise<Review[]> {
+    return db.select().from(reviews).orderBy(asc(reviews.id));
   }
 
   async getAverageRatingForVanListing(vanListingId: number): Promise<number> {
