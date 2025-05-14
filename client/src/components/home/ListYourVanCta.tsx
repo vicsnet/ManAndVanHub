@@ -97,7 +97,7 @@ const ListYourVanCta = () => {
 
           <div className="md:w-2/5">
             <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold mb-4 text-secondary">
+              <h3 className="text-xl font-semibold mb-4 text-secondary-foreground">
                 Join our driver network
               </h3>
               <form onSubmit={handleSubmit}>
