@@ -290,7 +290,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/van-listings/:id", isAuthenticated, async (req, res, next) => {
     try {
       const user = req.user as any;
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // No need to parse for MongoDB
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
       
       // Check if the listing exists
       const listing = await storage.getVanListing(id);
@@ -299,7 +300,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if the user owns the listing
-      if (listing.userId !== user.id) {
+      // For MongoDB, we need to compare the string representation or IDs
+      const listingUserId = listing.userId.toString ? listing.userId.toString() : listing.userId;
+      const userIdStr = userId.toString ? userId.toString() : userId;
+      if (listingUserId !== userIdStr) {
         return res.status(403).json({ message: "You don't have permission to delete this listing" });
       }
       
@@ -367,7 +371,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/bookings/:id/status", isAuthenticated, async (req, res, next) => {
     try {
       const user = req.user as any;
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // No need to parse for MongoDB
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
       const { status } = req.body;
       
       if (!status || !["pending", "confirmed", "completed", "cancelled"].includes(status)) {
@@ -380,9 +385,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Booking not found" });
       }
       
+      // Get string representations of IDs for comparison
+      const bookingUserId = booking.userId.toString ? booking.userId.toString() : booking.userId;
+      const userIdStr = userId.toString ? userId.toString() : userId;
+      
       // Check if the user owns the booking or the van listing
       const listing = await storage.getVanListing(booking.vanListingId);
-      if (booking.userId !== user.id && listing?.userId !== user.id) {
+      const listingUserId = listing?.userId.toString ? listing.userId.toString() : listing?.userId;
+      
+      if (bookingUserId !== userIdStr && listingUserId !== userIdStr) {
         return res.status(403).json({ message: "You don't have permission to update this booking" });
       }
       
