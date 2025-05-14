@@ -365,6 +365,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get bookings for vans owned by the user
+  app.get("/api/my-van-bookings", isAuthenticated, async (req, res, next) => {
+    try {
+      const user = req.user as any;
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
+      
+      // Get the user's van listings
+      const vanListings = await storage.getVanListingsByUser(userId);
+      
+      if (!vanListings || vanListings.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get all bookings for all van listings owned by this user
+      const allBookings = await Promise.all(
+        vanListings.map(async (listing) => {
+          const listingId = listing.id;
+          const bookings = await storage.getBookingsByVanListing(listingId);
+          
+          // Get customer details for each booking
+          const enhancedBookings = await Promise.all(
+            bookings.map(async (booking) => {
+              // Get customer info
+              const customer = await storage.getUser(booking.userId);
+              
+              return {
+                ...booking,
+                vanListing: {
+                  id: listing.id,
+                  title: listing.title,
+                  vanSize: listing.vanSize,
+                  hourlyRate: listing.hourlyRate
+                },
+                user: customer ? {
+                  fullName: customer.fullName,
+                  email: customer.email
+                } : undefined
+              };
+            })
+          );
+          
+          return enhancedBookings;
+        })
+      );
+      
+      // Flatten the array of arrays into a single array
+      const flattenedBookings = allBookings.flat();
+      
+      res.json(flattenedBookings);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Update booking status
   app.patch("/api/bookings/:id/status", isAuthenticated, async (req, res, next) => {
     try {

@@ -71,9 +71,14 @@ const Navbar = () => {
                       <Link href="/my-bookings">My Bookings</Link>
                     </DropdownMenuItem>
                     {user.isVanOwner && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/my-listings">My Listings</Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/my-listings">My Listings</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/manage-bookings">Manage Bookings</Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuItem onClick={() => logout()}>Logout</DropdownMenuItem>
                   </DropdownMenuContent>
@@ -141,13 +146,22 @@ const Navbar = () => {
                   My Bookings
                 </Link>
                 {user.isVanOwner && (
-                  <Link
-                    href="/my-listings"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100"
-                    onClick={closeMobileMenu}
-                  >
-                    My Listings
-                  </Link>
+                  <>
+                    <Link
+                      href="/my-listings"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100"
+                      onClick={closeMobileMenu}
+                    >
+                      My Listings
+                    </Link>
+                    <Link
+                      href="/manage-bookings"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100"
+                      onClick={closeMobileMenu}
+                    >
+                      Manage Bookings
+                    </Link>
+                  </>
                 )}
                 <button
                   onClick={() => {
