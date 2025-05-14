@@ -15,6 +15,8 @@ import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import BookingConfirmation from "@/pages/BookingConfirmation";
+import MyListings from "@/pages/MyListings";
+import MyBookings from "@/pages/MyBookings";
 import { AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -28,6 +30,8 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/booking-confirmation/:id" component={BookingConfirmation} />
+      <Route path="/my-listings" component={MyListings} />
+      <Route path="/my-bookings" component={MyBookings} />
       <Route component={NotFound} />
     </Switch>
   );

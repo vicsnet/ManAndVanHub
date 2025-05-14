@@ -77,8 +77,8 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
     },
     onSuccess: (data) => {
       toast({
-        title: "Booking confirmed",
-        description: "Your booking has been successfully created.",
+        title: "Appointment booked",
+        description: "Your appointment has been successfully scheduled. The van owner will contact you shortly to confirm details."
       });
       
       // Invalidate any relevant queries
