@@ -61,6 +61,16 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Messages for chat
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  bookingId: integer("booking_id").notNull().references(() => bookings.id),
+  senderId: integer("sender_id").notNull().references(() => users.id), 
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Define Zod schemas for insertions
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -94,6 +104,12 @@ export const insertReviewSchema = createInsertSchema(reviews).omit({
   createdAt: true,
 });
 
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+  isRead: true,
+});
+
 // Auth schema for login
 export const loginSchema = z.object({
   email: z.string().email(),
@@ -111,6 +127,8 @@ export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Login = z.infer<typeof loginSchema>;
 
 // Extended types for frontend
@@ -123,4 +141,12 @@ export type VanListingWithServices = VanListing & {
 
 export type VanListingWithDetails = VanListingWithServices & {
   reviews: (Review & { user: { fullName: string } })[];
+};
+
+export type MessageWithSender = Message & {
+  sender: {
+    id: number;
+    fullName: string;
+    isVanOwner: boolean;
+  };
 };

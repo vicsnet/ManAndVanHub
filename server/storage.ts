@@ -3,7 +3,8 @@ import {
   vanListings, 
   services, 
   bookings, 
-  reviews, 
+  reviews,
+  messages,
   type User, 
   type InsertUser, 
   type VanListing, 
@@ -14,6 +15,9 @@ import {
   type InsertBooking, 
   type Review, 
   type InsertReview,
+  type Message,
+  type InsertMessage,
+  type MessageWithSender,
   type VanListingWithServices,
   type VanListingWithDetails
 } from "@shared/schema";
@@ -50,6 +54,12 @@ export interface IStorage {
   createReview(review: InsertReview): Promise<Review>;
   getReviewsByVanListing(vanListingId: number): Promise<Review[]>;
   getAverageRatingForVanListing(vanListingId: number): Promise<number>;
+  
+  // Message methods
+  createMessage(message: InsertMessage): Promise<Message>;
+  getMessagesByBooking(bookingId: number): Promise<MessageWithSender[]>;
+  getUnreadMessageCountForUser(userId: number): Promise<number>;
+  markMessagesAsRead(bookingId: number, userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
