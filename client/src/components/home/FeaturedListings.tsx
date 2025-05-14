@@ -18,7 +18,7 @@ const FeaturedListings = () => {
     <section className="py-12 md:py-16 bg-white" id="featured-listings">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-secondary">
+          <h2 className="text-2xl md:text-3xl font-bold text-secondary-foreground">
             Featured Van Services
           </h2>
           <Link href="/search" className="text-primary hover:text-blue-700 font-medium flex items-center">

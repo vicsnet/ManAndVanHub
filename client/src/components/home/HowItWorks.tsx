@@ -5,7 +5,7 @@ const HowItWorks = () => {
     <section className="py-12 md:py-16 bg-slate-50" id="how-it-works">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-secondary mb-4">How Man & Van Works</h2>
+          <h2 className="text-3xl font-bold text-secondary-foreground mb-4">How Man & Van Works</h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
             Quick and easy steps to find and book the perfect van service for your needs.
           </p>
