@@ -103,8 +103,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVanListings(): Promise<VanListingWithServices[]> {
+    // Retrieve all listings
     const listings = await db.select().from(vanListings);
     
+    // Add services, user details, and ratings to each listing
     return Promise.all(
       listings.map(async (listing) => {
         const servicesList = await this.getServicesByVanListing(listing.id);
@@ -124,10 +126,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVanListingsByUser(userId: number): Promise<VanListingWithServices[]> {
-    const listings = await db.select().from(vanListings).where(eq(vanListings.userId, userId));
+    // Get all listings
+    const allListings = await db.select().from(vanListings);
     
+    // Filter by user ID
+    const userListings = allListings.filter(listing => listing.userId === userId);
+    
+    // Add services, user details, and ratings to each listing
     return Promise.all(
-      listings.map(async (listing) => {
+      userListings.map(async (listing) => {
         const servicesList = await this.getServicesByVanListing(listing.id);
         const user = await this.getUser(listing.userId);
         const averageRating = await this.getAverageRatingForVanListing(listing.id);
@@ -145,35 +152,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchVanListings(location: string, date?: string, vanSize?: string): Promise<VanListingWithServices[]> {
-    let query = db.select().from(vanListings);
+    // Get all listings and filter them in-memory to avoid Drizzle type issues
+    const allListings = await db.select().from(vanListings);
     
-    // Filter conditions
-    const conditions = [];
+    // Filter listings by location and van size
+    const filteredListings = allListings.filter(listing => {
+      // Location filter (if provided)
+      const locationMatches = !location || 
+        listing.location.toLowerCase().includes(location.toLowerCase()) ||
+        listing.postcode.toLowerCase().includes(location.toLowerCase());
+        
+      // Van size filter (if provided)
+      const sizeMatches = !vanSize || vanSize === "any" || listing.vanSize === vanSize;
+      
+      return locationMatches && sizeMatches;
+    });
     
-    // Filter by location if provided
-    if (location) {
-      conditions.push(
-        or(
-          like(vanListings.location, `%${location}%`),
-          like(vanListings.postcode, `%${location}%`)
-        )
-      );
-    }
-    
-    // Filter by van size if provided
-    if (vanSize && vanSize !== "any") {
-      conditions.push(eq(vanListings.vanSize, vanSize));
-    }
-    
-    // Apply filters if any conditions exist
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-    
-    const listings = await query;
-    
+    // Enrich listings with services, user, and ratings
     return Promise.all(
-      listings.map(async (listing) => {
+      filteredListings.map(async (listing) => {
         const servicesList = await this.getServicesByVanListing(listing.id);
         const user = await this.getUser(listing.userId);
         const averageRating = await this.getAverageRatingForVanListing(listing.id);
@@ -268,7 +265,15 @@ export class DatabaseStorage implements IStorage {
     .from(reviews)
     .where(eq(reviews.vanListingId, vanListingId));
     
-    return parseFloat(result[0].averageRating.toFixed(1));
+    // Handle cases where averageRating might be a string or a number
+    const rating = result[0].averageRating;
+    if (typeof rating === 'number') {
+      return parseFloat(rating.toFixed(1));
+    } else if (typeof rating === 'string') {
+      return parseFloat(parseFloat(rating).toFixed(1));
+    } else {
+      return 0;
+    }
   }
 
   // Initialize data for testing

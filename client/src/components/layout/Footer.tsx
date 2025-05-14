@@ -2,14 +2,16 @@ import { Link } from "wouter";
 
 const Footer = () => {
   return (
-    <footer className="bg-secondary text-white py-12">
+    <footer className="bg-gray-800 text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center mb-4">
-              <i className="fas fa-truck text-white text-2xl mr-2"></i>
+              <svg className="h-6 w-6 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
               <span className="text-xl font-bold">
-                Man<span className="text-primary">&</span>Van
+                Man<span className="text-blue-500">&</span>Van
               </span>
             </div>
             <p className="text-slate-300 mb-6">

@@ -29,9 +29,11 @@ const Navbar = () => {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
-              <i className="fas fa-truck text-primary text-2xl"></i>
-              <span className="text-xl font-bold text-secondary">
-                Man<span className="text-primary">&</span>Van
+              <svg className="h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+              <span className="text-xl font-bold text-gray-800">
+                Man<span className="text-blue-500">&</span>Van
               </span>
             </Link>
           </div>
