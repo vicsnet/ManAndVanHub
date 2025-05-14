@@ -33,6 +33,12 @@ export interface IStorage {
   getAverageRatingForVanListing(vanListingId: string | number): Promise<number>;
   getAllReviews?(): Promise<any[]>; // Optional: for migration
   
+  // Message methods
+  createMessage(message: any): Promise<any>;
+  getMessagesByBooking(bookingId: string | number): Promise<any[]>;
+  getUnreadMessageCountForUser(userId: string | number): Promise<number>;
+  markMessagesAsRead(bookingId: string | number, userId: string | number): Promise<void>;
+  
   // Initialize test data
   initializeTestData(): Promise<void>;
 }

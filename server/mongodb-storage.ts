@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import { 
-  UserModel, VanListingModel, ServiceModel, BookingModel, ReviewModel,
-  User, VanListing, Service, Booking, Review,
-  InsertUser, InsertVanListing, InsertService, InsertBooking, InsertReview,
-  VanListingWithServices, VanListingWithDetails
+  UserModel, VanListingModel, ServiceModel, BookingModel, ReviewModel, MessageModel,
+  User, VanListing, Service, Booking, Review, Message,
+  InsertUser, InsertVanListing, InsertService, InsertBooking, InsertReview, InsertMessage,
+  VanListingWithServices, VanListingWithDetails, MessageWithSender
 } from '../shared/mongodb-schema';
 import { IStorage } from './storage-interface';
 
@@ -340,6 +340,88 @@ export class MongoDBStorage implements IStorage {
     } catch (error) {
       console.error('Error in getAverageRatingForVanListing:', error);
       return 0;
+    }
+  }
+
+  // Message methods
+  async createMessage(message: InsertMessage): Promise<Message> {
+    try {
+      const newMessage = new MessageModel(message);
+      await newMessage.save();
+      return newMessage;
+    } catch (error) {
+      console.error('Error in createMessage:', error);
+      throw error;
+    }
+  }
+
+  async getMessagesByBooking(bookingId: number): Promise<MessageWithSender[]> {
+    try {
+      const messages = await MessageModel.find({ bookingId: bookingId.toString() })
+        .sort({ createdAt: 1 });
+      
+      const messagesWithSenders: MessageWithSender[] = [];
+      
+      for (const message of messages) {
+        const user = await UserModel.findById(message.senderId);
+        if (user) {
+          messagesWithSenders.push({
+            ...message.toObject(),
+            sender: {
+              id: user._id.toString(),
+              fullName: user.fullName,
+              isVanOwner: user.isVanOwner
+            }
+          });
+        }
+      }
+      
+      return messagesWithSenders;
+    } catch (error) {
+      console.error('Error in getMessagesByBooking:', error);
+      return [];
+    }
+  }
+
+  async getUnreadMessageCountForUser(userId: number): Promise<number> {
+    try {
+      // First, find all bookings for this user
+      const userBookings = await BookingModel.find({ userId: userId.toString() });
+      const listingBookings = await BookingModel.find({ 
+        vanListingId: { $in: await VanListingModel.find({ userId: userId.toString() }).distinct('_id') } 
+      });
+      
+      const bookingIds = [
+        ...userBookings.map(b => b._id.toString()),
+        ...listingBookings.map(b => b._id.toString())
+      ];
+      
+      // Then, count unread messages where recipient is this user
+      const unreadCount = await MessageModel.countDocuments({
+        bookingId: { $in: bookingIds },
+        senderId: { $ne: userId.toString() },
+        isRead: false
+      });
+      
+      return unreadCount;
+    } catch (error) {
+      console.error('Error in getUnreadMessageCountForUser:', error);
+      return 0;
+    }
+  }
+
+  async markMessagesAsRead(bookingId: number, userId: number): Promise<void> {
+    try {
+      await MessageModel.updateMany(
+        { 
+          bookingId: bookingId.toString(),
+          senderId: { $ne: userId.toString() },
+          isRead: false
+        },
+        { isRead: true }
+      );
+    } catch (error) {
+      console.error('Error in markMessagesAsRead:', error);
     }
   }
 

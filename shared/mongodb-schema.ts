@@ -178,12 +178,20 @@ export const loginValidationSchema = z.object({
   password: z.string(),
 });
 
+export const messageValidationSchema = z.object({
+  bookingId: z.string(),
+  senderId: z.string(),
+  content: z.string().min(1),
+  isRead: z.boolean().default(false),
+});
+
 // Type definitions for insert operations
 export type InsertUser = z.infer<typeof userValidationSchema>;
 export type InsertVanListing = z.infer<typeof vanListingValidationSchema>;
 export type InsertService = z.infer<typeof serviceValidationSchema>;
 export type InsertBooking = z.infer<typeof bookingValidationSchema>;
 export type InsertReview = z.infer<typeof reviewValidationSchema>;
+export type InsertMessage = z.infer<typeof messageValidationSchema>;
 export type Login = z.infer<typeof loginValidationSchema>;
 
 // Type definitions for querying
@@ -192,6 +200,7 @@ export type VanListing = VanListingDocument;
 export type Service = ServiceDocument;
 export type Booking = BookingDocument;
 export type Review = ReviewDocument;
+export type Message = MessageDocument;
 
 // Additional composite types
 export type VanListingWithServices = VanListing & {
@@ -203,4 +212,12 @@ export type VanListingWithServices = VanListing & {
 
 export type VanListingWithDetails = VanListingWithServices & {
   reviews: (Review & { user: { fullName: string } })[];
+};
+
+export type MessageWithSender = Message & {
+  sender: {
+    id: string;
+    fullName: string;
+    isVanOwner: boolean;
+  };
 };
