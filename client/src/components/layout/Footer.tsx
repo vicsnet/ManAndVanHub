@@ -11,7 +11,7 @@ const Footer = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               <span className="text-xl font-bold">
-                Man<span className="text-blue-500">&</span>Van
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">Man&Van</span>
               </span>
             </div>
             <p className="text-slate-300 mb-6">
@@ -34,7 +34,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+            <h4 className="text-lg font-semibold mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">Quick Links</h4>
             <ul className="space-y-2">
               <li>
                 <Link href="/" className="text-slate-300 hover:text-white transition-colors">
@@ -65,7 +65,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold mb-4">Support</h4>
+            <h4 className="text-lg font-semibold mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">Support</h4>
             <ul className="space-y-2">
               <li>
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">
@@ -96,7 +96,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="text-lg font-semibold mb-4">Newsletter</h4>
+            <h4 className="text-lg font-semibold mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">Newsletter</h4>
             <p className="text-slate-300 mb-4">
               Subscribe to our newsletter for updates and promotions.
             </p>
@@ -109,7 +109,7 @@ const Footer = () => {
                 />
                 <button
                   type="submit"
-                  className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-r-md"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-4 py-2 rounded-r-md"
                 >
                   <i className="fas fa-paper-plane"></i>
                 </button>
