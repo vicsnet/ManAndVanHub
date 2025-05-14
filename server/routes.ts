@@ -45,8 +45,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return done(null, false, { message: "Incorrect email or password" });
           }
 
-          // In a real application, we would hash the password and compare
-          if (user.password !== password) {
+          // Hash the password for comparison
+          const crypto = require('crypto');
+          const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+          
+          if (user.password !== hashedPassword) {
             return done(null, false, { message: "Incorrect email or password" });
           }
 

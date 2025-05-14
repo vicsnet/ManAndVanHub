@@ -6,6 +6,13 @@ export interface IStorage {
   createUser(user: any): Promise<any>;
   getAllUsers?(): Promise<any[]>; // Optional: for migration
   
+  // Password reset methods
+  storePasswordResetToken(userId: string | number, token: string, expires: Date): Promise<boolean>;
+  verifyPasswordResetToken(token: string): Promise<boolean>;
+  getUserByResetToken(token: string): Promise<any>;
+  updateUserPassword(userId: string | number, newPassword: string): Promise<boolean>;
+  clearPasswordResetToken(userId: string | number): Promise<boolean>;
+  
   // Van listing methods
   getVanListing(id: string | number): Promise<any>;
   getVanListings(): Promise<any[]>;

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import * as crypto from 'crypto';
 import { 
   UserModel, VanListingModel, ServiceModel, BookingModel, ReviewModel, MessageModel,
   User, VanListing, Service, Booking, Review, Message,
@@ -6,6 +7,11 @@ import {
   VanListingWithServices, VanListingWithDetails, MessageWithSender
 } from '../shared/mongodb-schema';
 import { IStorage } from './storage-interface';
+
+// Simple password hashing function
+function hashPassword(password: string): string {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
 
 export class MongoDBStorage implements IStorage {
   // User methods
@@ -31,12 +37,93 @@ export class MongoDBStorage implements IStorage {
 
   async createUser(user: InsertUser): Promise<User> {
     try {
-      const newUser = new UserModel(user);
+      // Hash the password before storing
+      const userWithHashedPassword = {
+        ...user,
+        password: hashPassword(user.password)
+      };
+      
+      const newUser = new UserModel(userWithHashedPassword);
       await newUser.save();
       return newUser;
     } catch (error) {
       console.error('Error in createUser:', error);
       throw error;
+    }
+  }
+  
+  // Password reset methods
+  async storePasswordResetToken(userId: string | number, token: string, expires: Date): Promise<boolean> {
+    try {
+      const result = await UserModel.findByIdAndUpdate(
+        userId,
+        {
+          resetPasswordToken: token,
+          resetPasswordExpires: expires
+        }
+      );
+      return !!result;
+    } catch (error) {
+      console.error('Error in storePasswordResetToken:', error);
+      return false;
+    }
+  }
+
+  async verifyPasswordResetToken(token: string): Promise<boolean> {
+    try {
+      const user = await UserModel.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: new Date() }
+      });
+      return !!user;
+    } catch (error) {
+      console.error('Error in verifyPasswordResetToken:', error);
+      return false;
+    }
+  }
+
+  async getUserByResetToken(token: string): Promise<User | undefined> {
+    try {
+      const user = await UserModel.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: new Date() }
+      });
+      return user || undefined;
+    } catch (error) {
+      console.error('Error in getUserByResetToken:', error);
+      return undefined;
+    }
+  }
+
+  async updateUserPassword(userId: string | number, newPassword: string): Promise<boolean> {
+    try {
+      // Hash the new password before storing
+      const hashedPassword = hashPassword(newPassword);
+      
+      const result = await UserModel.findByIdAndUpdate(
+        userId,
+        { password: hashedPassword }
+      );
+      return !!result;
+    } catch (error) {
+      console.error('Error in updateUserPassword:', error);
+      return false;
+    }
+  }
+
+  async clearPasswordResetToken(userId: string | number): Promise<boolean> {
+    try {
+      const result = await UserModel.findByIdAndUpdate(
+        userId,
+        {
+          resetPasswordToken: null,
+          resetPasswordExpires: null
+        }
+      );
+      return !!result;
+    } catch (error) {
+      console.error('Error in clearPasswordResetToken:', error);
+      return false;
     }
   }
 
