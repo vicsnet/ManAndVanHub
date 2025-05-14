@@ -513,6 +513,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Chat-related routes
+  
+  // Get messages for a specific booking
+  app.get("/api/bookings/:id/messages", isAuthenticated, async (req, res, next) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      if (isNaN(bookingId)) {
+        return res.status(400).json({ message: "Invalid booking ID" });
+      }
+      
+      // Get the booking to verify if the user is allowed to see messages
+      const booking = await storage.getBooking(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      const user = req.user as any;
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
+      
+      // Allow access if user is either the booking customer or the van owner
+      const vanListing = await storage.getVanListing(booking.vanListingId);
+      if (!vanListing) {
+        return res.status(404).json({ message: "Van listing not found" });
+      }
+      
+      const isBookingCustomer = booking.userId == userId;
+      const isVanOwner = vanListing.userId == userId;
+      
+      if (!isBookingCustomer && !isVanOwner) {
+        return res.status(403).json({ message: "Not authorized to view these messages" });
+      }
+      
+      // Get messages
+      const messages = await storage.getMessagesByBooking(bookingId);
+      
+      // Mark messages as read for the current user
+      await storage.markMessagesAsRead(bookingId, userId);
+      
+      res.json(messages);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Send a message
+  app.post("/api/bookings/:id/messages", isAuthenticated, async (req, res, next) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      if (isNaN(bookingId)) {
+        return res.status(400).json({ message: "Invalid booking ID" });
+      }
+      
+      // Check if the booking exists
+      const booking = await storage.getBooking(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      const user = req.user as any;
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
+      
+      // Allow sending messages if user is either the booking customer or the van owner
+      const vanListing = await storage.getVanListing(booking.vanListingId);
+      if (!vanListing) {
+        return res.status(404).json({ message: "Van listing not found" });
+      }
+      
+      const isBookingCustomer = booking.userId == userId;
+      const isVanOwner = vanListing.userId == userId;
+      
+      if (!isBookingCustomer && !isVanOwner) {
+        return res.status(403).json({ message: "Not authorized to send messages for this booking" });
+      }
+      
+      // Validate message content
+      const { content } = req.body;
+      if (!content || typeof content !== "string" || content.trim() === "") {
+        return res.status(400).json({ message: "Message content is required" });
+      }
+      
+      // Create message
+      const message = await storage.createMessage({
+        bookingId,
+        senderId: userId,
+        content: content.trim()
+      });
+      
+      // Return the message with sender info
+      const messageWithSender = {
+        ...message,
+        sender: {
+          id: userId,
+          fullName: user.fullName,
+          isVanOwner: user.isVanOwner
+        }
+      };
+      
+      res.status(201).json(messageWithSender);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get unread message count for current user
+  app.get("/api/messages/unread-count", isAuthenticated, async (req, res, next) => {
+    try {
+      const user = req.user as any;
+      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
+      
+      const count = await storage.getUnreadMessageCountForUser(userId);
+      res.json({ count });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Create HTTP server
   const httpServer = createServer(app);
   

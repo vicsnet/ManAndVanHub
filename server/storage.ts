@@ -340,6 +340,103 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Message methods
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [result] = await db
+      .insert(messages)
+      .values(message)
+      .returning();
+    
+    return result;
+  }
+
+  async getMessagesByBooking(bookingId: number): Promise<MessageWithSender[]> {
+    const messagesData = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.bookingId, bookingId))
+      .orderBy(asc(messages.createdAt));
+    
+    // Fetch sender details for each message
+    const messagesWithSenders = await Promise.all(
+      messagesData.map(async (message) => {
+        const sender = await this.getUser(message.senderId);
+        
+        return {
+          ...message,
+          sender: sender ? {
+            id: sender.id,
+            fullName: sender.fullName,
+            isVanOwner: sender.isVanOwner
+          } : {
+            id: 0,
+            fullName: "Unknown User",
+            isVanOwner: false
+          }
+        };
+      })
+    );
+    
+    return messagesWithSenders;
+  }
+
+  async getUnreadMessageCountForUser(userId: number): Promise<number> {
+    // Get all bookings where the user is either the customer or van owner
+    const userBookings = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.userId, userId));
+    
+    // Also get bookings where the user is the van owner
+    const userVanListings = await this.getVanListingsByUser(userId);
+    const vanListingIds = userVanListings.map(listing => listing.id);
+    
+    const vanOwnerBookings = vanListingIds.length > 0 
+      ? await db
+          .select()
+          .from(bookings)
+          .where(sql`${bookings.vanListingId} IN (${vanListingIds.join(',')})`)
+      : [];
+    
+    // Combine all booking IDs
+    const allBookingIds = [
+      ...userBookings.map(b => b.id),
+      ...vanOwnerBookings.map(b => b.id)
+    ];
+    
+    if (allBookingIds.length === 0) {
+      return 0;
+    }
+    
+    // Count unread messages where the user is NOT the sender
+    const unreadCount = await db
+      .select({
+        count: sql`COUNT(*)`
+      })
+      .from(messages)
+      .where(
+        and(
+          sql`${messages.bookingId} IN (${allBookingIds.join(',')})`,
+          eq(messages.isRead, false),
+          sql`${messages.senderId} != ${userId}`
+        )
+      );
+    
+    return Number(unreadCount[0].count) || 0;
+  }
+
+  async markMessagesAsRead(bookingId: number, userId: number): Promise<void> {
+    await db
+      .update(messages)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(messages.bookingId, bookingId),
+          sql`${messages.senderId} != ${userId}`
+        )
+      );
+  }
+
   // Initialize data for testing
   async initializeTestData() {
     // Create sample users
