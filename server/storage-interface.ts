@@ -4,6 +4,7 @@ export interface IStorage {
   getUser(id: string | number): Promise<any>;
   getUserByEmail(email: string): Promise<any>;
   createUser(user: any): Promise<any>;
+  getAllUsers?(): Promise<any[]>; // Optional: for migration
   
   // Van listing methods
   getVanListing(id: string | number): Promise<any>;
@@ -24,11 +25,13 @@ export interface IStorage {
   getBookingsByUser(userId: string | number): Promise<any[]>;
   getBookingsByVanListing(vanListingId: string | number): Promise<any[]>;
   updateBookingStatus(id: string | number, status: string): Promise<any>;
+  getAllBookings?(): Promise<any[]>; // Optional: for migration
   
   // Review methods
   createReview(review: any): Promise<any>;
   getReviewsByVanListing(vanListingId: string | number): Promise<any[]>;
   getAverageRatingForVanListing(vanListingId: string | number): Promise<number>;
+  getAllReviews?(): Promise<any[]>; // Optional: for migration
   
   // Initialize test data
   initializeTestData(): Promise<void>;
