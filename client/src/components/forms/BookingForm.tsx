@@ -267,12 +267,15 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
           
           <div className="pt-2">
             <div className="flex justify-between items-center font-semibold text-lg mb-4">
-              <span>Total:</span>
+              <span>Estimated Cost:</span>
               <span>£{totalPrice.toFixed(2)}</span>
             </div>
+            <p className="text-sm text-gray-500 mb-4">
+              This is an estimated cost. Payment will be collected directly by the van owner after the service is completed.
+            </p>
             
             <Button type="submit" className="w-full">
-              Book Now
+              Schedule Appointment
             </Button>
           </div>
         </form>
@@ -282,9 +285,9 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
       <Dialog open={isConfirmationOpen} onOpenChange={setIsConfirmationOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm Your Booking</DialogTitle>
+            <DialogTitle>Confirm Your Appointment</DialogTitle>
             <DialogDescription>
-              Please check the details of your booking before confirming.
+              Please check the details of your appointment before scheduling. The van owner will contact you to confirm these details.
             </DialogDescription>
           </DialogHeader>
           
@@ -330,9 +333,12 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
               
               <div className="border-t pt-3">
                 <div className="flex justify-between items-center font-semibold">
-                  <span>Total Price:</span>
+                  <span>Estimated Cost:</span>
                   <span>£{bookingDetails.totalPrice.toFixed(2)}</span>
                 </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  Payment will be collected directly by the van owner after the service.
+                </p>
               </div>
               
               <div className="flex justify-end space-x-2 pt-2">
@@ -348,7 +354,7 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
                   ) : (
                     <>
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      Confirm Booking
+                      Schedule Appointment
                     </>
                   )}
                 </Button>
