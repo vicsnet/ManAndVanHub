@@ -6,6 +6,7 @@ import {
   Button,
   buttonVariants
 } from "@/components/ui/button";
+import { ChatButton } from "@/components/chat";
 import {
   Card,
   CardContent,
@@ -300,6 +301,11 @@ const ManageBookings = () => {
                           </Button>
                         )}
                         
+                        <ChatButton 
+                          bookingId={booking.id} 
+                          variant="outline"
+                          label={booking.status === "cancelled" ? "View Messages" : "Messages"}
+                        />
                         <Button variant="outline" asChild>
                           <Link href={`/van-listing/${booking.vanListingId}`}>View Listing</Link>
                         </Button>
