@@ -32,13 +32,15 @@ const HeroSection = () => {
       }}
     >
       <div className="container mx-auto px-4 text-center">
-        <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">
-          Find Reliable Van & Driver Services Near You
-        </h1>
-        <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-          Connect with trusted local drivers for moving, delivery, and transport services at
-          competitive rates.
-        </p>
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">
+            Find Reliable <span className="bg-gradient-to-r from-blue-400 to-indigo-300 text-transparent bg-clip-text">Van & Driver</span> Services Near You
+          </h1>
+          <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
+            Connect with trusted local drivers for moving, delivery, and transport services at
+            competitive rates.
+          </p>
+        </div>
 
         <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
           <form className="flex flex-col md:flex-row gap-4" onSubmit={handleSubmit}>
@@ -96,7 +98,11 @@ const HeroSection = () => {
             </div>
 
             <div className="mt-6 md:mt-0 md:self-end">
-              <Button type="submit" className="w-full" size="lg">
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800" 
+                size="lg"
+              >
                 Search
               </Button>
             </div>

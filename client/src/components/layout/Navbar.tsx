@@ -25,16 +25,16 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
-              <svg className="h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 w-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
               </svg>
-              <span className="text-xl font-bold text-gray-800">
-                Man<span className="text-blue-500">&</span>Van
+              <span className="text-xl font-bold">
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">Man&Van</span>
               </span>
             </Link>
           </div>
@@ -94,10 +94,10 @@ const Navbar = () => {
                 </DropdownMenu>
               ) : (
                 <>
-                  <Button variant="ghost" asChild>
+                  <Button variant="ghost" asChild className="hover:text-blue-600">
                     <Link href="/login">Login</Link>
                   </Button>
-                  <Button asChild>
+                  <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800">
                     <Link href="/register">Sign Up</Link>
                   </Button>
                 </>
@@ -201,7 +201,7 @@ const Navbar = () => {
                 </Link>
                 <Link
                   href="/register"
-                  className="block px-3 py-2 rounded-md text-base font-medium bg-primary text-white hover:bg-blue-700"
+                  className="block px-3 py-2 rounded-md text-base font-medium bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800"
                   onClick={closeMobileMenu}
                 >
                   Sign Up
