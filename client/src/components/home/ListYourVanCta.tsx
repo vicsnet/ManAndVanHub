@@ -54,12 +54,12 @@ const ListYourVanCta = () => {
   };
 
   return (
-    <section className="py-16 bg-primary">
+    <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-1/2 mb-8 md:mb-0">
             <h2 className="text-3xl font-bold text-white mb-4">
-              Own a van? Start earning with Man & Van
+              Own a van? <span className="text-blue-200">Start earning</span> with Man & Van
             </h2>
             <p className="text-white opacity-90 text-lg mb-6">
               Join our network of trusted drivers and connect with customers in your area looking for
@@ -68,19 +68,19 @@ const ListYourVanCta = () => {
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
-                  <PoundSterling className="text-primary" />
+                  <PoundSterling className="text-blue-600" />
                 </div>
                 <span className="text-white">Set your own rates</span>
               </div>
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
-                  <CalendarIcon className="text-primary" />
+                  <CalendarIcon className="text-blue-600" />
                 </div>
                 <span className="text-white">Choose your schedule</span>
               </div>
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
-                  <MapPinIcon className="text-primary" />
+                  <MapPinIcon className="text-blue-600" />
                 </div>
                 <span className="text-white">Work in your area</span>
               </div>
@@ -88,7 +88,7 @@ const ListYourVanCta = () => {
             <Button
               variant="secondary"
               size="lg"
-              className="bg-white text-primary hover:bg-blue-50"
+              className="bg-white text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700 border-2 border-white hover:bg-blue-50"
               asChild
             >
               <Link href="/create-listing">List Your Van Service</Link>
@@ -97,7 +97,7 @@ const ListYourVanCta = () => {
 
           <div className="md:w-2/5">
             <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold mb-4 text-secondary-foreground">
+              <h3 className="text-xl font-semibold mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">
                 Join our driver network
               </h3>
               <form onSubmit={handleSubmit}>
@@ -161,7 +161,10 @@ const ListYourVanCta = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full">
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800"
+                >
                   Get Started
                 </Button>
               </form>
