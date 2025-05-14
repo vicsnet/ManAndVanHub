@@ -17,6 +17,8 @@ import {
   type VanListingWithServices,
   type VanListingWithDetails
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, like, desc, sql, and, or } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -50,37 +52,227 @@ export interface IStorage {
   getAverageRatingForVanListing(vanListingId: number): Promise<number>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private vanListings: Map<number, VanListing>;
-  private services: Map<number, Service>;
-  private bookings: Map<number, Booking>;
-  private reviews: Map<number, Review>;
-  
-  private currentUserId: number;
-  private currentVanListingId: number;
-  private currentServiceId: number;
-  private currentBookingId: number;
-  private currentReviewId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.vanListings = new Map();
-    this.services = new Map();
-    this.bookings = new Map();
-    this.reviews = new Map();
-    
-    this.currentUserId = 1;
-    this.currentVanListingId = 1;
-    this.currentServiceId = 1;
-    this.currentBookingId = 1;
-    this.currentReviewId = 1;
-    
-    // Add some initial data
-    this.initializeData();
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
-  private initializeData() {
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.email, email));
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await db.insert(users).values(insertUser).returning();
+    return result[0];
+  }
+
+  // Van listing methods
+  async getVanListing(id: number): Promise<VanListingWithDetails | undefined> {
+    const listingResult = await db.select().from(vanListings).where(eq(vanListings.id, id));
+    const listing = listingResult[0];
+    if (!listing) return undefined;
+
+    const servicesList = await this.getServicesByVanListing(id);
+    const reviewsList = await this.getReviewsByVanListing(id);
+    const averageRating = await this.getAverageRatingForVanListing(id);
+    
+    // Get user details for each review
+    const reviewsWithUserDetails = await Promise.all(
+      reviewsList.map(async (review) => {
+        const user = await this.getUser(review.userId);
+        return {
+          ...review,
+          user: { fullName: user?.fullName || "Anonymous" }
+        };
+      })
+    );
+    
+    const user = await this.getUser(listing.userId);
+    
+    return {
+      ...listing,
+      services: servicesList,
+      user: { fullName: user?.fullName || "Unknown" },
+      reviews: reviewsWithUserDetails,
+      averageRating,
+      reviewCount: reviewsList.length
+    };
+  }
+
+  async getVanListings(): Promise<VanListingWithServices[]> {
+    const listings = await db.select().from(vanListings);
+    
+    return Promise.all(
+      listings.map(async (listing) => {
+        const servicesList = await this.getServicesByVanListing(listing.id);
+        const user = await this.getUser(listing.userId);
+        const averageRating = await this.getAverageRatingForVanListing(listing.id);
+        const reviewsList = await this.getReviewsByVanListing(listing.id);
+        
+        return {
+          ...listing,
+          services: servicesList,
+          user: { fullName: user?.fullName || "Unknown" },
+          averageRating,
+          reviewCount: reviewsList.length
+        };
+      })
+    );
+  }
+
+  async getVanListingsByUser(userId: number): Promise<VanListingWithServices[]> {
+    const listings = await db.select().from(vanListings).where(eq(vanListings.userId, userId));
+    
+    return Promise.all(
+      listings.map(async (listing) => {
+        const servicesList = await this.getServicesByVanListing(listing.id);
+        const user = await this.getUser(listing.userId);
+        const averageRating = await this.getAverageRatingForVanListing(listing.id);
+        const reviewsList = await this.getReviewsByVanListing(listing.id);
+        
+        return {
+          ...listing,
+          services: servicesList,
+          user: { fullName: user?.fullName || "Unknown" },
+          averageRating,
+          reviewCount: reviewsList.length
+        };
+      })
+    );
+  }
+
+  async searchVanListings(location: string, date?: string, vanSize?: string): Promise<VanListingWithServices[]> {
+    let query = db.select().from(vanListings);
+    
+    // Filter conditions
+    const conditions = [];
+    
+    // Filter by location if provided
+    if (location) {
+      conditions.push(
+        or(
+          like(vanListings.location, `%${location}%`),
+          like(vanListings.postcode, `%${location}%`)
+        )
+      );
+    }
+    
+    // Filter by van size if provided
+    if (vanSize && vanSize !== "any") {
+      conditions.push(eq(vanListings.vanSize, vanSize));
+    }
+    
+    // Apply filters if any conditions exist
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    const listings = await query;
+    
+    return Promise.all(
+      listings.map(async (listing) => {
+        const servicesList = await this.getServicesByVanListing(listing.id);
+        const user = await this.getUser(listing.userId);
+        const averageRating = await this.getAverageRatingForVanListing(listing.id);
+        const reviewsList = await this.getReviewsByVanListing(listing.id);
+        
+        return {
+          ...listing,
+          services: servicesList,
+          user: { fullName: user?.fullName || "Unknown" },
+          averageRating,
+          reviewCount: reviewsList.length
+        };
+      })
+    );
+  }
+
+  async createVanListing(listing: InsertVanListing): Promise<VanListing> {
+    const result = await db.insert(vanListings).values(listing).returning();
+    return result[0];
+  }
+
+  async updateVanListing(id: number, listing: Partial<InsertVanListing>): Promise<VanListing | undefined> {
+    const result = await db.update(vanListings)
+      .set(listing)
+      .where(eq(vanListings.id, id))
+      .returning();
+    
+    return result[0];
+  }
+
+  async deleteVanListing(id: number): Promise<boolean> {
+    const result = await db.delete(vanListings)
+      .where(eq(vanListings.id, id))
+      .returning({ id: vanListings.id });
+    
+    return result.length > 0;
+  }
+
+  // Service methods
+  async addService(service: InsertService): Promise<Service> {
+    const result = await db.insert(services).values(service).returning();
+    return result[0];
+  }
+
+  async getServicesByVanListing(vanListingId: number): Promise<Service[]> {
+    return db.select().from(services).where(eq(services.vanListingId, vanListingId));
+  }
+
+  // Booking methods
+  async createBooking(booking: InsertBooking): Promise<Booking> {
+    const result = await db.insert(bookings).values(booking).returning();
+    return result[0];
+  }
+
+  async getBooking(id: number): Promise<Booking | undefined> {
+    const result = await db.select().from(bookings).where(eq(bookings.id, id));
+    return result[0];
+  }
+
+  async getBookingsByUser(userId: number): Promise<Booking[]> {
+    return db.select().from(bookings).where(eq(bookings.userId, userId));
+  }
+
+  async getBookingsByVanListing(vanListingId: number): Promise<Booking[]> {
+    return db.select().from(bookings).where(eq(bookings.vanListingId, vanListingId));
+  }
+
+  async updateBookingStatus(id: number, status: string): Promise<Booking | undefined> {
+    const result = await db.update(bookings)
+      .set({ status })
+      .where(eq(bookings.id, id))
+      .returning();
+    
+    return result[0];
+  }
+
+  // Review methods
+  async createReview(review: InsertReview): Promise<Review> {
+    const result = await db.insert(reviews).values(review).returning();
+    return result[0];
+  }
+
+  async getReviewsByVanListing(vanListingId: number): Promise<Review[]> {
+    return db.select().from(reviews).where(eq(reviews.vanListingId, vanListingId))
+      .orderBy(desc(reviews.createdAt));
+  }
+
+  async getAverageRatingForVanListing(vanListingId: number): Promise<number> {
+    const result = await db.select({
+      averageRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`
+    })
+    .from(reviews)
+    .where(eq(reviews.vanListingId, vanListingId));
+    
+    return parseFloat(result[0].averageRating.toFixed(1));
+  }
+
+  // Initialize data for testing
+  async initializeTestData() {
     // Create sample users
     const jamesUser: InsertUser = {
       username: "james_moving",
@@ -108,9 +300,9 @@ export class MemStorage implements IStorage {
     };
     
     // Create the users
-    const james = this.createUser(jamesUser);
-    const dave = this.createUser(daveUser);
-    const sarah = this.createUser(sarahUser);
+    const james = await this.createUser(jamesUser);
+    const dave = await this.createUser(daveUser);
+    const sarah = await this.createUser(sarahUser);
     
     // Create sample van listings
     const jamesVan: InsertVanListing = {
@@ -153,263 +345,63 @@ export class MemStorage implements IStorage {
     };
     
     // Create van listings
-    const jamesListing = this.createVanListing(jamesVan);
-    const daveListing = this.createVanListing(daveVan);
-    const sarahListing = this.createVanListing(sarahVan);
+    const jamesListing = await this.createVanListing(jamesVan);
+    const daveListing = await this.createVanListing(daveVan);
+    const sarahListing = await this.createVanListing(sarahVan);
     
     // Add services
-    this.addService({ vanListingId: jamesListing.id, serviceName: "Furniture" });
-    this.addService({ vanListingId: jamesListing.id, serviceName: "House Moves" });
+    await this.addService({ vanListingId: jamesListing.id, serviceName: "Furniture" });
+    await this.addService({ vanListingId: jamesListing.id, serviceName: "House Moves" });
     
-    this.addService({ vanListingId: daveListing.id, serviceName: "House Moves" });
-    this.addService({ vanListingId: daveListing.id, serviceName: "Single Item" });
+    await this.addService({ vanListingId: daveListing.id, serviceName: "House Moves" });
+    await this.addService({ vanListingId: daveListing.id, serviceName: "Single Item" });
     
-    this.addService({ vanListingId: sarahListing.id, serviceName: "Office Moves" });
-    this.addService({ vanListingId: sarahListing.id, serviceName: "Furniture" });
+    await this.addService({ vanListingId: sarahListing.id, serviceName: "Office Moves" });
+    await this.addService({ vanListingId: sarahListing.id, serviceName: "Furniture" });
     
     // Add some reviews
+    const userStartId = 4; // Start IDs for review users
+    let userId = userStartId;
+    
+    // Create a review user
+    const createReviewUser = async (id: number): Promise<User> => {
+      const reviewUser: InsertUser = {
+        username: `user${id}`,
+        email: `user${id}@example.com`,
+        password: "password123",
+        fullName: `User ${id}`,
+        isVanOwner: false,
+      };
+      return this.createUser(reviewUser);
+    };
+    
+    // Add reviews for each listing
     for (let i = 0; i < 5; i++) {
-      this.createReview({
+      const reviewUser1 = await createReviewUser(userId++);
+      await this.createReview({
         vanListingId: jamesListing.id,
-        userId: this.currentUserId++,
+        userId: reviewUser1.id,
         rating: 5,
         comment: "Excellent service, very professional!"
       });
       
-      this.createReview({
+      const reviewUser2 = await createReviewUser(userId++);
+      await this.createReview({
         vanListingId: daveListing.id,
-        userId: this.currentUserId++,
+        userId: reviewUser2.id,
         rating: 4,
         comment: "Good service, would use again."
       });
       
-      this.createReview({
+      const reviewUser3 = await createReviewUser(userId++);
+      await this.createReview({
         vanListingId: sarahListing.id,
-        userId: this.currentUserId++,
+        userId: reviewUser3.id,
         rating: 5,
         comment: "Amazing service, highly recommend!"
       });
     }
-    
-    // Reset user ID counter after adding sample data
-    this.currentUserId = 4;
-  }
-
-  // User methods
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const createdAt = new Date();
-    const user: User = { ...insertUser, id, createdAt };
-    this.users.set(id, user);
-    return user;
-  }
-
-  // Van listing methods
-  async getVanListing(id: number): Promise<VanListingWithDetails | undefined> {
-    const listing = this.vanListings.get(id);
-    if (!listing) return undefined;
-
-    const services = await this.getServicesByVanListing(id);
-    const reviews = await this.getReviewsByVanListing(id);
-    const averageRating = await this.getAverageRatingForVanListing(id);
-    
-    // Get user details for reviews
-    const reviewsWithUserDetails = await Promise.all(
-      reviews.map(async (review) => {
-        const user = await this.getUser(review.userId);
-        return {
-          ...review,
-          user: { fullName: user?.fullName || "Anonymous" }
-        };
-      })
-    );
-    
-    const user = await this.getUser(listing.userId);
-    
-    return {
-      ...listing,
-      services,
-      user: { fullName: user?.fullName || "Unknown" },
-      reviews: reviewsWithUserDetails,
-      averageRating,
-      reviewCount: reviews.length
-    };
-  }
-
-  async getVanListings(): Promise<VanListingWithServices[]> {
-    const listings = Array.from(this.vanListings.values());
-    
-    return Promise.all(
-      listings.map(async (listing) => {
-        const services = await this.getServicesByVanListing(listing.id);
-        const user = await this.getUser(listing.userId);
-        const averageRating = await this.getAverageRatingForVanListing(listing.id);
-        const reviews = await this.getReviewsByVanListing(listing.id);
-        
-        return {
-          ...listing,
-          services,
-          user: { fullName: user?.fullName || "Unknown" },
-          averageRating,
-          reviewCount: reviews.length
-        };
-      })
-    );
-  }
-
-  async getVanListingsByUser(userId: number): Promise<VanListingWithServices[]> {
-    const listings = Array.from(this.vanListings.values())
-      .filter(listing => listing.userId === userId);
-    
-    return Promise.all(
-      listings.map(async (listing) => {
-        const services = await this.getServicesByVanListing(listing.id);
-        const user = await this.getUser(listing.userId);
-        const averageRating = await this.getAverageRatingForVanListing(listing.id);
-        const reviews = await this.getReviewsByVanListing(listing.id);
-        
-        return {
-          ...listing,
-          services,
-          user: { fullName: user?.fullName || "Unknown" },
-          averageRating,
-          reviewCount: reviews.length
-        };
-      })
-    );
-  }
-
-  async searchVanListings(location: string, date?: string, vanSize?: string): Promise<VanListingWithServices[]> {
-    let listings = Array.from(this.vanListings.values());
-    
-    // Filter by location (postcode or text)
-    if (location) {
-      listings = listings.filter(listing => 
-        listing.location.toLowerCase().includes(location.toLowerCase()) || 
-        listing.postcode.toLowerCase().includes(location.toLowerCase())
-      );
-    }
-    
-    // Filter by van size if provided
-    if (vanSize && vanSize !== "any") {
-      listings = listings.filter(listing => listing.vanSize === vanSize);
-    }
-    
-    // Date filtering could be done here, but for MVP we'll just return the filtered listings
-    
-    return Promise.all(
-      listings.map(async (listing) => {
-        const services = await this.getServicesByVanListing(listing.id);
-        const user = await this.getUser(listing.userId);
-        const averageRating = await this.getAverageRatingForVanListing(listing.id);
-        const reviews = await this.getReviewsByVanListing(listing.id);
-        
-        return {
-          ...listing,
-          services,
-          user: { fullName: user?.fullName || "Unknown" },
-          averageRating,
-          reviewCount: reviews.length
-        };
-      })
-    );
-  }
-
-  async createVanListing(listing: InsertVanListing): Promise<VanListing> {
-    const id = this.currentVanListingId++;
-    const createdAt = new Date();
-    const vanListing: VanListing = { ...listing, id, createdAt };
-    this.vanListings.set(id, vanListing);
-    return vanListing;
-  }
-
-  async updateVanListing(id: number, listing: Partial<InsertVanListing>): Promise<VanListing | undefined> {
-    const existingListing = this.vanListings.get(id);
-    if (!existingListing) return undefined;
-    
-    const updatedListing = { ...existingListing, ...listing };
-    this.vanListings.set(id, updatedListing);
-    return updatedListing;
-  }
-
-  async deleteVanListing(id: number): Promise<boolean> {
-    return this.vanListings.delete(id);
-  }
-
-  // Service methods
-  async addService(service: InsertService): Promise<Service> {
-    const id = this.currentServiceId++;
-    const newService: Service = { ...service, id };
-    this.services.set(id, newService);
-    return newService;
-  }
-
-  async getServicesByVanListing(vanListingId: number): Promise<Service[]> {
-    return Array.from(this.services.values())
-      .filter(service => service.vanListingId === vanListingId);
-  }
-
-  // Booking methods
-  async createBooking(booking: InsertBooking): Promise<Booking> {
-    const id = this.currentBookingId++;
-    const createdAt = new Date();
-    const newBooking: Booking = { ...booking, id, createdAt };
-    this.bookings.set(id, newBooking);
-    return newBooking;
-  }
-
-  async getBooking(id: number): Promise<Booking | undefined> {
-    return this.bookings.get(id);
-  }
-
-  async getBookingsByUser(userId: number): Promise<Booking[]> {
-    return Array.from(this.bookings.values())
-      .filter(booking => booking.userId === userId);
-  }
-
-  async getBookingsByVanListing(vanListingId: number): Promise<Booking[]> {
-    return Array.from(this.bookings.values())
-      .filter(booking => booking.vanListingId === vanListingId);
-  }
-
-  async updateBookingStatus(id: number, status: string): Promise<Booking | undefined> {
-    const booking = this.bookings.get(id);
-    if (!booking) return undefined;
-    
-    const updatedBooking = { ...booking, status };
-    this.bookings.set(id, updatedBooking);
-    return updatedBooking;
-  }
-
-  // Review methods
-  async createReview(review: InsertReview): Promise<Review> {
-    const id = this.currentReviewId++;
-    const createdAt = new Date();
-    const newReview: Review = { ...review, id, createdAt };
-    this.reviews.set(id, newReview);
-    return newReview;
-  }
-
-  async getReviewsByVanListing(vanListingId: number): Promise<Review[]> {
-    return Array.from(this.reviews.values())
-      .filter(review => review.vanListingId === vanListingId);
-  }
-
-  async getAverageRatingForVanListing(vanListingId: number): Promise<number> {
-    const reviews = await this.getReviewsByVanListing(vanListingId);
-    if (reviews.length === 0) return 0;
-    
-    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-    return parseFloat((totalRating / reviews.length).toFixed(1));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
