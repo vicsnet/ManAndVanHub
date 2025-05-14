@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { TruckIcon } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -7,9 +8,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center mb-4">
-              <svg className="h-6 w-6 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <div className="h-8 w-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full flex items-center justify-center mr-2">
+                <TruckIcon className="h-5 w-5 text-white" />
+              </div>
               <span className="text-xl font-bold">
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">Man&Van</span>
               </span>
