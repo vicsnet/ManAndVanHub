@@ -234,8 +234,50 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async getBookingsByUser(userId: number): Promise<Booking[]> {
-    return db.select().from(bookings).where(eq(bookings.userId, userId));
+  async getBookingsByUser(userId: number): Promise<any[]> {
+    // First get all bookings for the user
+    const userBookings = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.userId, userId));
+    
+    // Then enhance each booking with van listing data
+    const enhancedBookings = await Promise.all(
+      userBookings.map(async (booking) => {
+        // Get the related van listing
+        const [vanListingData] = await db
+          .select()
+          .from(vanListings)
+          .where(eq(vanListings.id, booking.vanListingId));
+        
+        if (!vanListingData) {
+          return booking; // Return basic booking if no van listing found
+        }
+        
+        // Get the van owner's data
+        const [ownerData] = await db
+          .select({
+            fullName: users.fullName
+          })
+          .from(users)
+          .where(eq(users.id, vanListingData.userId));
+          
+        return {
+          ...booking,
+          vanListing: {
+            id: vanListingData.id,
+            title: vanListingData.title,
+            vanSize: vanListingData.vanSize,
+            hourlyRate: vanListingData.hourlyRate,
+            user: {
+              fullName: ownerData?.fullName || "Unknown"
+            }
+          }
+        };
+      })
+    );
+    
+    return enhancedBookings;
   }
 
   async getBookingsByVanListing(vanListingId: number): Promise<Booking[]> {

@@ -244,9 +244,38 @@ export class MongoDBStorage implements IStorage {
     }
   }
 
-  async getBookingsByUser(userId: number): Promise<Booking[]> {
+  async getBookingsByUser(userId: number): Promise<any[]> {
     try {
-      return await BookingModel.find({ userId });
+      // Get all bookings for the user
+      const bookings = await BookingModel.find({ userId });
+      
+      // Enhance each booking with van listing details
+      const enhancedBookings = await Promise.all(
+        bookings.map(async (booking) => {
+          const vanListing = await VanListingModel.findById(booking.vanListingId);
+          if (!vanListing) {
+            // Fall back to basic booking data if van listing not found
+            return booking.toObject();
+          }
+          
+          const owner = await UserModel.findById(vanListing.userId);
+          
+          return {
+            ...booking.toObject(),
+            vanListing: {
+              id: vanListing._id,
+              title: vanListing.title,
+              vanSize: vanListing.vanSize,
+              hourlyRate: vanListing.hourlyRate,
+              user: {
+                fullName: owner?.fullName || "Unknown Owner"
+              }
+            }
+          };
+        })
+      );
+      
+      return enhancedBookings;
     } catch (error) {
       console.error('Error in getBookingsByUser:', error);
       return [];
