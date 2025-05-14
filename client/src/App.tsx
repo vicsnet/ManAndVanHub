@@ -14,6 +14,8 @@ import CreateListing from "@/pages/CreateListing";
 import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import BookingConfirmation from "@/pages/BookingConfirmation";
 import MyListings from "@/pages/MyListings";
 import MyBookings from "@/pages/MyBookings";
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/booking-confirmation/:id" component={BookingConfirmation} />
       <Route path="/my-listings" component={MyListings} />
       <Route path="/my-bookings" component={MyBookings} />

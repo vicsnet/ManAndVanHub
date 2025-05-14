@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/auth";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -82,9 +82,9 @@ const Login = () => {
       <div className="min-h-screen bg-slate-50 py-12">
         <div className="container max-w-md mx-auto px-4">
           <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Log In</CardTitle>
-              <CardDescription className="text-center">
+            <CardHeader className="space-y-1 text-center bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-t-lg">
+              <CardTitle className="text-2xl font-bold">Log In</CardTitle>
+              <CardDescription className="text-slate-100">
                 Enter your email and password to access your account
               </CardDescription>
             </CardHeader>
@@ -144,9 +144,9 @@ const Login = () => {
                       )}
                     />
                     
-                    <a href="#" className="text-sm text-primary hover:underline">
+                    <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                       Forgot password?
-                    </a>
+                    </Link>
                   </div>
                   
                   {loginError && (

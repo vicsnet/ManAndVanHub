@@ -171,6 +171,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
   
+  // Forgot password endpoint
+  app.post("/api/forgot-password", async (req, res, next) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // In a real implementation, you would:
+      // 1. Check if user exists
+      const user = await storage.getUserByEmail(email);
+      
+      // 2. Generate a token - In a real app, use a secure random token
+      // 3. Store the token with expiration in the database
+      // 4. Send an email with a link to reset password
+      
+      // For now, we'll simulate success
+      // We still return 200 even if the email doesn't exist to prevent email enumeration
+      return res.status(200).json({ 
+        message: "If an account with that email exists, a password reset link has been sent." 
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Verify reset token endpoint
+  app.get("/api/verify-reset-token", async (req, res, next) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+      }
+      
+      // In a real implementation, you would:
+      // 1. Check if the token exists in the database
+      // 2. Check if the token is expired
+      
+      // For now, we'll simulate a valid token for demo purposes
+      return res.status(200).json({ valid: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Reset password endpoint
+  app.post("/api/reset-password", async (req, res, next) => {
+    try {
+      const { token, password } = req.body;
+      
+      if (!token || !password) {
+        return res.status(400).json({ message: "Token and password are required" });
+      }
+      
+      // In a real implementation, you would:
+      // 1. Verify the token again
+      // 2. Find the user associated with the token
+      // 3. Update the user's password
+      // 4. Remove the used token
+      
+      // For demo purposes, we'll simulate success
+      return res.status(200).json({ message: "Password has been reset successfully" });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Get all van listings
   app.get("/api/van-listings", async (req, res, next) => {
     try {
