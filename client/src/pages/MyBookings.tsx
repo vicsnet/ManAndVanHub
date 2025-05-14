@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Booking } from "@shared/schema";
+import { ChatButton } from "@/components/chat";
 
 // Define a type for booking with van listing details
 interface BookingWithDetails extends Booking {
@@ -151,7 +152,12 @@ const MyBookings = () => {
                     </p>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-end border-t pt-4">
+                <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                  <ChatButton 
+                    bookingId={booking.id} 
+                    variant="outline"
+                    label={booking.status === "cancelled" ? "View Messages" : "Messages"}
+                  />
                   <Button variant="outline" asChild>
                     <Link href={`/van-listing/${booking.vanListingId}`}>View Listing</Link>
                   </Button>
