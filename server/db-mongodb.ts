@@ -3,14 +3,12 @@ import mongoose from 'mongoose';
 // Connect to MongoDB using Mongoose
 async function connectToDatabase() {
   try {
-    if (!process.env.MONGODB_URI) {
-      console.log('MONGODB_URI not found. Using fallback in-memory storage.');
-      return false;
-    }
+    // Use the provided MongoDB URI directly
+    const mongoURI = 'mongodb+srv://rovedev:rovenow1234@cluster0.gkxebqh.mongodb.net/man-van?retryWrites=true&w=majority';
     
     // Network issues can occur with Replit and MongoDB Atlas
     // Let's try to connect with more robust options
-    await mongoose.connect(process.env.MONGODB_URI, {
+    await mongoose.connect(mongoURI, {
       serverSelectionTimeoutMS: 10000, // Timeout after 10s 
       socketTimeoutMS: 60000, // Close sockets after 60s of inactivity
       connectTimeoutMS: 30000, // Give up initial connection after 30s

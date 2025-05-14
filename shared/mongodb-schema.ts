@@ -52,6 +52,14 @@ export interface ReviewDocument extends Document {
   updatedAt: Date;
 }
 
+export interface MessageDocument extends Document {
+  bookingId: mongoose.Types.ObjectId;
+  senderId: mongoose.Types.ObjectId;
+  content: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
 // Define Mongoose Schemas
 const userSchema = new Schema<UserDocument>({
   username: { type: String, required: true, unique: true },
@@ -103,12 +111,21 @@ const reviewSchema = new Schema<ReviewDocument>({
   updatedAt: { type: Date, default: Date.now },
 });
 
+const messageSchema = new Schema<MessageDocument>({
+  bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', required: true },
+  senderId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  content: { type: String, required: true },
+  isRead: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+});
+
 // Create Mongoose models
 export const UserModel = mongoose.models.User || mongoose.model<UserDocument>('User', userSchema);
 export const VanListingModel = mongoose.models.VanListing || mongoose.model<VanListingDocument>('VanListing', vanListingSchema);
 export const ServiceModel = mongoose.models.Service || mongoose.model<ServiceDocument>('Service', serviceSchema);
 export const BookingModel = mongoose.models.Booking || mongoose.model<BookingDocument>('Booking', bookingSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<ReviewDocument>('Review', reviewSchema);
+export const MessageModel = mongoose.models.Message || mongoose.model<MessageDocument>('Message', messageSchema);
 
 // Define Zod schemas for validation
 export const userValidationSchema = z.object({

@@ -9,35 +9,26 @@ let storageInstance: IStorage | null = null;
 let _usingMongoDB: boolean | null = null;
 
 /**
- * Get the appropriate storage implementation based on the database connection
+ * Get the MongoDB storage implementation
  */
 export function getStorage(): IStorage {
   if (storageInstance) {
     return storageInstance;
   }
 
-  // Check if MongoDB is connected
-  if (mongoose.connection.readyState === 1) {
-    console.log('Using MongoDB Storage implementation');
-    storageInstance = new MongoDBStorage();
-    _usingMongoDB = true;
-  } else {
-    console.log('Using PostgreSQL Storage implementation');
-    storageInstance = new DatabaseStorage();
-    _usingMongoDB = false;
-  }
+  // Always use MongoDB now
+  console.log('Using MongoDB Storage implementation');
+  storageInstance = new MongoDBStorage();
+  _usingMongoDB = true;
 
   return storageInstance;
 }
 
 /**
- * Check if MongoDB is being used
+ * Check if MongoDB is being used (always returns true now)
  */
 export function usingMongoDB(): boolean {
-  if (_usingMongoDB === null) {
-    _usingMongoDB = mongoose.connection.readyState === 1;
-  }
-  return _usingMongoDB;
+  return true;
 }
 
 /**
