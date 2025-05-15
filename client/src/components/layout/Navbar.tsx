@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Menu, MessageSquare } from "lucide-react";
+import { User, Menu, MessageSquare, TruckIcon } from "lucide-react";
 import { UnreadMessagesIndicator } from "@/components/chat";
 
 const Navbar = () => {
@@ -30,9 +30,9 @@ const Navbar = () => {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
-              <svg className="h-6 w-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-              </svg>
+              <div className="h-8 w-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full flex items-center justify-center">
+                <TruckIcon className="h-5 w-5 text-white" />
+              </div>
               <span className="text-xl font-bold">
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-700 text-transparent bg-clip-text">Man&Van</span>
               </span>
