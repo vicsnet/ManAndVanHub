@@ -22,6 +22,8 @@ import MyBookings from "@/pages/MyBookings";
 import ManageBookings from "@/pages/ManageBookings";
 import TrackingMap from "@/pages/TrackingMap";
 import AdminDashboard from "@/pages/AdminDashboard";
+import TermsAndConditions from "@/pages/TermsAndConditions";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import { AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -42,6 +44,8 @@ function Router() {
       <Route path="/manage-bookings" component={ManageBookings} />
       <Route path="/tracking/:bookingId" component={TrackingMap} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/terms" component={TermsAndConditions} />
+      <Route path="/privacy" component={PrivacyPolicy} />
       <Route component={NotFound} />
     </Switch>
   );

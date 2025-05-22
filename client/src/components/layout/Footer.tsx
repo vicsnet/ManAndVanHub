@@ -127,15 +127,15 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} Man & Van. All rights reserved.
           </p>
           <div className="space-x-4">
-            <a href="#" className="text-slate-300 hover:text-white transition-colors">
+            <Link href="/terms" className="text-slate-300 hover:text-white transition-colors">
               Terms of Service
-            </a>
-            <a href="#" className="text-slate-300 hover:text-white transition-colors">
+            </Link>
+            <Link href="/privacy" className="text-slate-300 hover:text-white transition-colors">
               Privacy Policy
-            </a>
-            <a href="#" className="text-slate-300 hover:text-white transition-colors">
+            </Link>
+            <Link href="/terms#cookies" className="text-slate-300 hover:text-white transition-colors">
               Cookie Policy
-            </a>
+            </Link>
           </div>
         </div>
       </div>
