@@ -269,7 +269,8 @@ const AdminDashboard = () => {
                 isLoading={isLoading}
                 onDeleteUser={handleDeleteUser}
                 onToggleVanOwner={handleToggleVanOwnerStatus}
-                toggleLoading={toggleVanOwnerMutation.isPending}
+                onToggleAdmin={handleToggleAdminStatus}
+                toggleLoading={toggleVanOwnerMutation.isPending || toggleAdminMutation.isPending}
               />
             </TabsContent>
             
@@ -279,7 +280,8 @@ const AdminDashboard = () => {
                 isLoading={isLoading}
                 onDeleteUser={handleDeleteUser}
                 onToggleVanOwner={handleToggleVanOwnerStatus}
-                toggleLoading={toggleVanOwnerMutation.isPending}
+                onToggleAdmin={handleToggleAdminStatus}
+                toggleLoading={toggleVanOwnerMutation.isPending || toggleAdminMutation.isPending}
               />
             </TabsContent>
             
@@ -289,7 +291,8 @@ const AdminDashboard = () => {
                 isLoading={isLoading}
                 onDeleteUser={handleDeleteUser}
                 onToggleVanOwner={handleToggleVanOwnerStatus}
-                toggleLoading={toggleVanOwnerMutation.isPending}
+                onToggleAdmin={handleToggleAdminStatus}
+                toggleLoading={toggleVanOwnerMutation.isPending || toggleAdminMutation.isPending}
               />
             </TabsContent>
           </Tabs>
@@ -407,7 +410,16 @@ const UsersTable: React.FC<UsersTableProps> = ({
                     onClick={() => onToggleVanOwner(user)}
                     disabled={toggleLoading}
                   >
-                    {user.isVanOwner ? "Make Customer" : "Make Van Owner"}
+                    {user.isVanOwner ? "Remove Van Owner" : "Make Van Owner"}
+                  </Button>
+                  <Button
+                    variant={user.isAdmin ? "default" : "secondary"}
+                    size="sm"
+                    onClick={() => onToggleAdmin(user)}
+                    disabled={toggleLoading}
+                    className={user.isAdmin ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}
+                  >
+                    {user.isAdmin ? "Remove Admin" : "Make Admin"}
                   </Button>
                   <Button
                     variant="destructive"
