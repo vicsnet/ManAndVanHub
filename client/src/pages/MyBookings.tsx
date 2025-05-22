@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Booking } from "@shared/schema";
 import { ChatButton } from "@/components/chat";
+import { MapIcon } from "lucide-react";
 
 // Define a type for booking with van listing details
 interface BookingWithDetails extends Booking {

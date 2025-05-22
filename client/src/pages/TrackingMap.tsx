@@ -54,20 +54,20 @@ const TrackingMap: React.FC<TrackingMapProps> = () => {
   const [vanPosition, setVanPosition] = useState<LatLngLiteral | undefined>();
   
   // Fetch booking details
-  const { data: booking, isLoading: isLoadingBooking, error: bookingError } = useQuery({
+  const { data: booking, isLoading: isLoadingBooking, error: bookingError } = useQuery<Booking>({
     queryKey: ['/api/bookings', bookingId],
-    queryFn: () => apiRequest(`/api/bookings/${bookingId}`),
+    queryFn: () => apiRequest<Booking>(`/api/bookings/${bookingId}`),
     enabled: !!bookingId,
     staleTime: 60000, // 1 minute
   });
 
   // Fetch van's current position
-  const { data: currentPosition, isLoading: isLoadingPosition } = useQuery({
+  const { data: currentPosition, isLoading: isLoadingPosition } = useQuery<LatLngLiteral>({
     queryKey: ['/api/van-tracking', bookingId, 'current'],
-    queryFn: () => apiRequest(`/api/van-tracking/${bookingId}/current`),
+    queryFn: () => apiRequest<LatLngLiteral>(`/api/van-tracking/${bookingId}/current`),
     enabled: !!bookingId,
     refetchInterval: 10000, // Refresh every 10 seconds for real-time updates
-    onSuccess: (data) => {
+    onSuccess: (data: LatLngLiteral) => {
       if (data && data.lat && data.lng) {
         setVanPosition(data);
       }
@@ -75,9 +75,9 @@ const TrackingMap: React.FC<TrackingMapProps> = () => {
   });
 
   // Fetch van's tracking history
-  const { data: trackingHistory } = useQuery({
+  const { data: trackingHistory } = useQuery<TrackingPoint[]>({
     queryKey: ['/api/van-tracking', bookingId, 'history'],
-    queryFn: () => apiRequest(`/api/van-tracking/${bookingId}/history`),
+    queryFn: () => apiRequest<TrackingPoint[]>(`/api/van-tracking/${bookingId}/history`),
     enabled: !!bookingId,
   });
 
@@ -89,7 +89,7 @@ const TrackingMap: React.FC<TrackingMapProps> = () => {
         bookingId,
         position
       }),
-    }),
+    } as RequestInit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/van-tracking', bookingId, 'current'] });
       queryClient.invalidateQueries({ queryKey: ['/api/van-tracking', bookingId, 'history'] });
