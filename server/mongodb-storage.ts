@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import * as crypto from 'crypto';
 import { 
-  UserModel, VanListingModel, ServiceModel, BookingModel, ReviewModel, MessageModel,
-  User, VanListing, Service, Booking, Review, Message,
-  InsertUser, InsertVanListing, InsertService, InsertBooking, InsertReview, InsertMessage,
+  UserModel, VanListingModel, ServiceModel, BookingModel, ReviewModel, MessageModel, VanTrackingModel,
+  User, VanListing, Service, Booking, Review, Message, VanTracking,
+  InsertUser, InsertVanListing, InsertService, InsertBooking, InsertReview, InsertMessage, InsertVanTracking,
   VanListingWithServices, VanListingWithDetails, MessageWithSender
 } from '../shared/mongodb-schema';
 import { IStorage } from './storage-interface';
@@ -509,6 +509,62 @@ export class MongoDBStorage implements IStorage {
       );
     } catch (error) {
       console.error('Error in markMessagesAsRead:', error);
+    }
+  }
+  
+  // Van tracking methods
+  async updateVanPosition(bookingId: string | number, position: {lat: number, lng: number}): Promise<any> {
+    try {
+      const bookingObjectId = new mongoose.Types.ObjectId(bookingId.toString());
+      
+      // Create a new tracking record
+      const trackingData = {
+        bookingId: bookingObjectId,
+        vanPosition: position,
+        timestamp: new Date()
+      };
+      
+      const trackingRecord = await VanTrackingModel.create(trackingData);
+      return trackingRecord;
+    } catch (error) {
+      console.error('Error updating van position:', error);
+      throw error;
+    }
+  }
+
+  async getVanPosition(bookingId: string | number): Promise<{lat: number, lng: number} | null> {
+    try {
+      const bookingObjectId = new mongoose.Types.ObjectId(bookingId.toString());
+      
+      // Get the most recent position for this booking
+      const latestPosition = await VanTrackingModel.findOne(
+        { bookingId: bookingObjectId },
+        null,
+        { sort: { timestamp: -1 } }
+      );
+      
+      return latestPosition ? latestPosition.vanPosition : null;
+    } catch (error) {
+      console.error('Error getting van position:', error);
+      throw error;
+    }
+  }
+
+  async getVanTrackingHistory(bookingId: string | number): Promise<any[]> {
+    try {
+      const bookingObjectId = new mongoose.Types.ObjectId(bookingId.toString());
+      
+      // Get all tracking records for this booking, ordered by timestamp
+      const trackingHistory = await VanTrackingModel.find(
+        { bookingId: bookingObjectId },
+        null,
+        { sort: { timestamp: 1 } }
+      );
+      
+      return trackingHistory;
+    } catch (error) {
+      console.error('Error getting van tracking history:', error);
+      throw error;
     }
   }
 

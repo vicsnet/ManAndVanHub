@@ -46,6 +46,11 @@ export interface IStorage {
   getUnreadMessageCountForUser(userId: string | number): Promise<number>;
   markMessagesAsRead(bookingId: string | number, userId: string | number): Promise<void>;
   
+  // Van tracking methods
+  updateVanPosition(bookingId: string | number, position: {lat: number, lng: number}): Promise<any>;
+  getVanPosition(bookingId: string | number): Promise<{lat: number, lng: number} | null>;
+  getVanTrackingHistory(bookingId: string | number): Promise<any[]>;
+  
   // Initialize test data
   initializeTestData(): Promise<void>;
 }
