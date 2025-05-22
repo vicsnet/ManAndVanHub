@@ -1,6 +1,6 @@
 /**
  * Script to create an admin user in the database
- * Run with: node scripts/create-admin.js
+ * Run with: node scripts/add-admin.js
  */
 import 'dotenv/config';
 import mongoose from 'mongoose';

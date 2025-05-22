@@ -80,7 +80,12 @@ const AdminDashboard = () => {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: (userId: string | number) => 
-      apiRequest(`/api/admin/users/${userId}`, { method: 'DELETE' } as RequestInit),
+      apiRequest(`/api/admin/users/${userId}`, { 
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      } as RequestInit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       toast({
@@ -103,6 +108,9 @@ const AdminDashboard = () => {
     mutationFn: ({ userId, isVanOwner }: { userId: string | number, isVanOwner: boolean }) => 
       apiRequest(`/api/admin/users/${userId}/van-owner-status`, { 
         method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ isVanOwner })
       } as RequestInit),
     onSuccess: () => {
