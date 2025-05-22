@@ -70,6 +70,7 @@ const userSchema = new Schema<UserDocument>({
   password: { type: String, required: true },
   fullName: { type: String, required: true },
   isVanOwner: { type: Boolean, default: false },
+  isAdmin: { type: Boolean, default: false },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
   createdAt: { type: Date, default: Date.now },
@@ -139,6 +140,7 @@ export const userValidationSchema = z.object({
   password: z.string().min(6),
   fullName: z.string().min(2),
   isVanOwner: z.boolean().default(false),
+  isAdmin: z.boolean().default(false),
 });
 
 export const vanListingValidationSchema = z.object({

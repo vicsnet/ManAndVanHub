@@ -101,6 +101,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: "Unauthorized" });
   };
   
+  // Admin middleware
+  const isAdmin = (req: Request, res: Response, next: Function) => {
+    if (req.isAuthenticated() && (req.user as any).isAdmin) {
+      return next();
+    }
+    res.status(403).json({ message: "Forbidden: Admin access required" });
+  };
+  
   // Get current user
   app.get("/api/me", (req, res) => {
     if (req.isAuthenticated()) {
@@ -827,14 +835,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Admin routes
-  // Middleware to check if user is admin
-  const isAdmin = (req: Request, res: Response, next: Function) => {
-    if (req.isAuthenticated() && (req.user as any).isAdmin) {
-      return next();
+  // Admin routes for user management
+
+  // Toggle van owner status (admin only)
+  app.patch("/api/admin/users/:userId/van-owner-status", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { isVanOwner } = req.body;
+      
+      if (typeof isVanOwner !== 'boolean') {
+        return res.status(400).json({ message: "isVanOwner must be a boolean value" });
+      }
+      
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        userId,
+        { $set: { isVanOwner } },
+        { new: true }
+      ).select("-password -resetPasswordToken -resetPasswordExpires");
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      next(error);
     }
-    return res.status(403).json({ message: "Access denied. Admin privileges required." });
-  };
+  });
 
   // Get all users (admin only)
   app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res, next) => {

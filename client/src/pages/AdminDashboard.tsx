@@ -44,6 +44,7 @@ interface User {
   username: string;
   fullName: string;
   isVanOwner: boolean;
+  isAdmin: boolean;
   createdAt: string;
 }
 
