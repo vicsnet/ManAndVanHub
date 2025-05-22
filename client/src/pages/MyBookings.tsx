@@ -154,11 +154,26 @@ const MyBookings = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                  {/* Only show tracking button for confirmed or in-progress bookings */}
+                  {(booking.status === "confirmed" || booking.status === "in_progress") && (
+                    <Button 
+                      variant="outline" 
+                      className="border-blue-600 text-blue-700 hover:bg-blue-50"
+                      asChild
+                    >
+                      <Link href={`/tracking/${booking.id}`}>
+                        <MapIcon className="h-4 w-4 mr-1" />
+                        Track Van
+                      </Link>
+                    </Button>
+                  )}
+                  
                   <ChatButton 
                     bookingId={booking.id} 
                     variant="outline"
                     label={booking.status === "cancelled" ? "View Messages" : "Messages"}
                   />
+                  
                   <Button variant="outline" asChild>
                     <Link href={`/van-listing/${booking.vanListingId}`}>View Listing</Link>
                   </Button>

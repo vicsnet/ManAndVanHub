@@ -818,6 +818,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin routes
+  // Middleware to check if user is admin
+  const isAdmin = (req: Request, res: Response, next: Function) => {
+    if (req.isAuthenticated() && (req.user as any).isAdmin) {
+      return next();
+    }
+    return res.status(403).json({ message: "Access denied. Admin privileges required." });
+  };
+
+  // Get all users (admin only)
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const users = await UserModel.find({}, {
+        password: 0, // exclude password field
+        resetPasswordToken: 0,
+        resetPasswordExpires: 0
+      }).sort({ createdAt: -1 });
+      
+      res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Delete user (admin only)
+  app.delete("/api/admin/users/:userId", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      
+      // Don't allow admins to delete themselves
+      if (userId === (req.user as any).id.toString()) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
+      }
+      
+      // First, check if user exists
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Then remove all their data:
+      // 1. Delete their van listings and associated services
+      const vanListings = await VanListingModel.find({ userId });
+      
+      for (const listing of vanListings) {
+        // Delete services for this listing
+        await ServiceModel.deleteMany({ vanListingId: listing._id });
+        
+        // Delete reviews for this listing
+        await ReviewModel.deleteMany({ vanListingId: listing._id });
+        
+        // Get bookings associated with this listing
+        const bookings = await BookingModel.find({ vanListingId: listing._id });
+        
+        // Delete messages for each booking
+        for (const booking of bookings) {
+          await MessageModel.deleteMany({ bookingId: booking._id });
+        }
+        
+        // Delete bookings for this listing
+        await BookingModel.deleteMany({ vanListingId: listing._id });
+      }
+      
+      // Delete all van listings owned by the user
+      await VanListingModel.deleteMany({ userId });
+      
+      // 2. Delete all bookings made by the user
+      const userBookings = await BookingModel.find({ userId });
+      
+      // Delete messages for each booking
+      for (const booking of userBookings) {
+        await MessageModel.deleteMany({ bookingId: booking._id });
+      }
+      
+      await BookingModel.deleteMany({ userId });
+      
+      // 3. Delete all reviews made by the user
+      await ReviewModel.deleteMany({ userId });
+      
+      // 4. Delete all messages sent by the user
+      await MessageModel.deleteMany({ senderId: userId });
+      
+      // 5. Delete user's van tracking data
+      if (VanTrackingModel) {
+        await VanTrackingModel.deleteMany({ userId });
+      }
+      
+      // Finally, delete the user
+      await UserModel.findByIdAndDelete(userId);
+      
+      res.json({ message: "User and all associated data deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Update user's van owner status (admin only)
+  app.patch("/api/admin/users/:userId/van-owner-status", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const { isVanOwner } = req.body;
+      
+      if (typeof isVanOwner !== 'boolean') {
+        return res.status(400).json({ message: "isVanOwner must be a boolean value" });
+      }
+      
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        userId,
+        { isVanOwner },
+        { new: true, runValidators: true }
+      );
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({
+        id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        fullName: updatedUser.fullName,
+        isVanOwner: updatedUser.isVanOwner,
+        isAdmin: updatedUser.isAdmin
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
   

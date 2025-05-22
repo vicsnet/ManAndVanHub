@@ -8,6 +8,7 @@ export interface UserDocument extends Document {
   password: string;
   fullName: string;
   isVanOwner: boolean;
+  isAdmin?: boolean;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   createdAt: Date;
