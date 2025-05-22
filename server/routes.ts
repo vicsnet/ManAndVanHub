@@ -848,6 +848,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Admin routes for user management
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.patch("/api/admin/users/:id/toggle-van-owner", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Toggle the isVanOwner status
+      const updatedUser = await storage.updateUserStatus(id, !user.isVanOwner, user.isAdmin);
+      res.json(updatedUser);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.patch("/api/admin/users/:id/toggle-admin", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Toggle the isAdmin status
+      const updatedUser = await storage.updateUserStatus(id, user.isVanOwner, !user.isAdmin);
+      res.json(updatedUser);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.delete("/api/admin/users/:id", isAuthenticated, isAdmin, async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if trying to delete self
+      const currentUser = req.user as any;
+      const currentUserId = currentUser._id || currentUser.id;
+      
+      if (id.toString() === currentUserId.toString()) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+      
+      const result = await storage.deleteUser(id);
+      res.json({ success: result });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // Toggle van owner status (admin only)
   app.patch("/api/admin/users/:userId/van-owner-status", isAuthenticated, isAdmin, async (req, res, next) => {
