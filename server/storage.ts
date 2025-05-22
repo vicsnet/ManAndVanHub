@@ -29,6 +29,9 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>; // For admin dashboard
+  updateUserStatus(id: number, isVanOwner: boolean, isAdmin?: boolean): Promise<User | undefined>; // For admin dashboard
+  deleteUser(id: number): Promise<boolean>; // For admin dashboard
   
   // Van listing methods
   getVanListing(id: number): Promise<VanListingWithDetails | undefined>;
@@ -81,6 +84,74 @@ export class DatabaseStorage implements IStorage {
   
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users).orderBy(asc(users.id));
+  }
+  
+  async updateUserStatus(id: number, isVanOwner: boolean, isAdmin?: boolean): Promise<User | undefined> {
+    const updateData: any = { isVanOwner };
+    
+    // Only update isAdmin if it's provided
+    if (isAdmin !== undefined) {
+      updateData.isAdmin = isAdmin;
+    }
+    
+    const result = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, id))
+      .returning();
+      
+    return result[0];
+  }
+  
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      // Get all van listings for this user
+      const userVanListings = await this.getVanListingsByUser(id);
+      const vanListingIds = userVanListings.map(listing => listing.id);
+      
+      // Delete all services, bookings, and reviews related to these van listings
+      for (const listingId of vanListingIds) {
+        // Get bookings for this listing
+        const bookings = await this.getBookingsByVanListing(listingId);
+        const bookingIds = bookings.map(booking => booking.id);
+        
+        // Delete messages for these bookings
+        for (const bookingId of bookingIds) {
+          await db.delete(messages).where(eq(messages.bookingId, bookingId));
+        }
+        
+        // Delete bookings for this listing
+        await db.delete(bookings).where(eq(bookings.vanListingId, listingId));
+        
+        // Delete services for this listing
+        await db.delete(services).where(eq(services.vanListingId, listingId));
+        
+        // Delete reviews for this listing
+        await db.delete(reviews).where(eq(reviews.vanListingId, listingId));
+      }
+      
+      // Delete user's van listings
+      for (const listingId of vanListingIds) {
+        await db.delete(vanListings).where(eq(vanListings.id, listingId));
+      }
+      
+      // Delete bookings made by this user
+      await db.delete(bookings).where(eq(bookings.userId, id));
+      
+      // Delete reviews made by this user
+      await db.delete(reviews).where(eq(reviews.userId, id));
+      
+      // Delete messages sent by this user
+      await db.delete(messages).where(eq(messages.senderId, id));
+      
+      // Finally, delete the user
+      const result = await db.delete(users).where(eq(users.id, id));
+      
+      return result.count > 0;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
   }
 
   // Van listing methods

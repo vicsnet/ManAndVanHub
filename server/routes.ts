@@ -64,6 +64,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Remove password before serializing
           const { password: _password, ...safeUser } = user;
+          
+          // Ensure isAdmin property is included
+          if (safeUser.isAdmin === undefined) {
+            safeUser.isAdmin = false;
+          }
+          
           return done(null, safeUser);
         } catch (err) {
           return done(err);
@@ -87,6 +93,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Remove password before deserializing
       const { password: _password, ...safeUser } = user;
+      
+      // Ensure isAdmin property is included
+      if (safeUser.isAdmin === undefined) {
+        safeUser.isAdmin = false;
+      }
+      
       done(null, safeUser);
     } catch (err) {
       done(err);

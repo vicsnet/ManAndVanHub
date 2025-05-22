@@ -2,9 +2,9 @@
  * Script to create an admin user in the database
  * Run with: node scripts/create-admin.js
  */
-require('dotenv').config();
-const mongoose = require('mongoose');
-const crypto = require('crypto');
+import 'dotenv/config';
+import mongoose from 'mongoose';
+import crypto from 'crypto';
 
 // Simple password hashing function
 function hashPassword(password) {
