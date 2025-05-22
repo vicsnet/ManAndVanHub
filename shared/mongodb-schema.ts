@@ -225,3 +225,37 @@ export type MessageWithSender = Message & {
     isVanOwner: boolean;
   };
 };
+
+// Van tracking schemas
+export interface VanTrackingDocument extends Document {
+  bookingId: mongoose.Types.ObjectId;
+  vanPosition: {
+    lat: number;
+    lng: number;
+  };
+  timestamp: Date;
+}
+
+export const vanTrackingSchema = new mongoose.Schema<VanTrackingDocument>({
+  bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true },
+  vanPosition: {
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true }
+  },
+  timestamp: { type: Date, default: Date.now }
+});
+
+export const VanTrackingModel = mongoose.models.VanTracking || 
+  mongoose.model<VanTrackingDocument>('VanTracking', vanTrackingSchema);
+
+export const vanTrackingValidationSchema = z.object({
+  bookingId: z.string(),
+  vanPosition: z.object({
+    lat: z.number(),
+    lng: z.number()
+  }),
+  timestamp: z.date().optional()
+});
+
+export type InsertVanTracking = z.infer<typeof vanTrackingValidationSchema>;
+export type VanTracking = VanTrackingDocument;
