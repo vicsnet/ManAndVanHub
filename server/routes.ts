@@ -729,6 +729,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Van tracking routes
+  app.post("/api/van-tracking/update", isAuthenticated, async (req, res, next) => {
+    try {
+      const { bookingId, position } = req.body;
+      
+      if (!bookingId || !position || typeof position.lat !== 'number' || typeof position.lng !== 'number') {
+        return res.status(400).json({ message: 'Invalid tracking data. Required: bookingId, position.lat, position.lng' });
+      }
+      
+      const booking = await storage.getBooking(bookingId);
+      
+      if (!booking) {
+        return res.status(404).json({ message: 'Booking not found' });
+      }
+      
+      // Only allow the van owner to update the position
+      const user = req.user as any;
+      const userId = user._id || user.id;
+      const vanListing = await storage.getVanListing(booking.vanListingId);
+      const vanOwnerId = vanListing.userId.toString();
+      
+      if (vanOwnerId !== userId.toString()) {
+        return res.status(403).json({ message: 'Only the van owner can update the position' });
+      }
+      
+      const trackingUpdate = await storage.updateVanPosition(bookingId, position);
+      res.status(201).json(trackingUpdate);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/van-tracking/:bookingId/current", isAuthenticated, async (req, res, next) => {
+    try {
+      const bookingId = req.params.bookingId;
+      const booking = await storage.getBooking(bookingId);
+      
+      if (!booking) {
+        return res.status(404).json({ message: 'Booking not found' });
+      }
+      
+      // Only allow participants of the booking to view tracking data
+      const user = req.user as any;
+      const userId = user._id || user.id;
+      const vanListing = await storage.getVanListing(booking.vanListingId);
+      
+      if (booking.userId.toString() !== userId.toString() && 
+          vanListing.userId.toString() !== userId.toString()) {
+        return res.status(403).json({ message: 'Not authorized to view this tracking data' });
+      }
+      
+      const position = await storage.getVanPosition(bookingId);
+      
+      if (!position) {
+        return res.status(404).json({ message: 'No tracking data found for this booking' });
+      }
+      
+      res.json(position);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/van-tracking/:bookingId/history", isAuthenticated, async (req, res, next) => {
+    try {
+      const bookingId = req.params.bookingId;
+      const booking = await storage.getBooking(bookingId);
+      
+      if (!booking) {
+        return res.status(404).json({ message: 'Booking not found' });
+      }
+      
+      // Only allow participants of the booking to view tracking history
+      const user = req.user as any;
+      const userId = user._id || user.id;
+      const vanListing = await storage.getVanListing(booking.vanListingId);
+      
+      if (booking.userId.toString() !== userId.toString() && 
+          vanListing.userId.toString() !== userId.toString()) {
+        return res.status(403).json({ message: 'Not authorized to view tracking history' });
+      }
+      
+      const history = await storage.getVanTrackingHistory(bookingId);
+      res.json(history);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Create HTTP server
   const httpServer = createServer(app);
   

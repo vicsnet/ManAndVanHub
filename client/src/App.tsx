@@ -20,6 +20,7 @@ import BookingConfirmation from "@/pages/BookingConfirmation";
 import MyListings from "@/pages/MyListings";
 import MyBookings from "@/pages/MyBookings";
 import ManageBookings from "@/pages/ManageBookings";
+import TrackingMap from "@/pages/TrackingMap";
 import { AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/my-listings" component={MyListings} />
       <Route path="/my-bookings" component={MyBookings} />
       <Route path="/manage-bookings" component={ManageBookings} />
+      <Route path="/tracking/:bookingId" component={TrackingMap} />
       <Route component={NotFound} />
     </Switch>
   );

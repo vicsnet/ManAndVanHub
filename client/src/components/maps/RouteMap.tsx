@@ -393,7 +393,7 @@ export function RouteMap({
                   defaultZoom={DEFAULT_ZOOM}
                   gestureHandling="cooperative"
                   mapTypeId="roadmap"
-                  options={mapOptions as MapOptions}
+                  styles={mapOptions.styles}
                   className="w-full h-full"
                 >
                   {routeCalculated && originInput && destinationInput && (
