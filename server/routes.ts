@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { getStorage, getSchemas } from "./storage-factory";
 import { z } from "zod";
@@ -6,6 +6,15 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import { 
+  UserModel, 
+  VanListingModel, 
+  ServiceModel, 
+  BookingModel,
+  ReviewModel,
+  MessageModel,
+  VanTrackingModel
+} from "../shared/mongodb-schema";
 
 const SessionStore = MemoryStore(session);
 
