@@ -128,6 +128,32 @@ const AdminDashboard = () => {
       });
     }
   });
+  
+  // Toggle admin status mutation
+  const toggleAdminMutation = useMutation({
+    mutationFn: ({ userId, isAdmin }: { userId: string | number, isAdmin: boolean }) => 
+      apiRequest(`/api/admin/users/${userId}/admin-status`, { 
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isAdmin })
+      } as RequestInit),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Admin Status Updated",
+        description: "The user's admin privileges have been updated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update admin status: ${error}`,
+        variant: "destructive"
+      });
+    }
+  });
 
   // Handle delete user
   const handleDeleteUser = (user: User) => {
@@ -140,6 +166,24 @@ const AdminDashboard = () => {
     toggleVanOwnerMutation.mutate({ 
       userId: user.id, 
       isVanOwner: !user.isVanOwner 
+    });
+  };
+  
+  // Handle toggle admin status
+  const handleToggleAdminStatus = (user: User) => {
+    // Don't allow admins to remove their own admin privileges
+    if (user.id === (user as any)?.id) {
+      toast({
+        title: "Not Allowed",
+        description: "You cannot remove your own admin privileges.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toggleAdminMutation.mutate({ 
+      userId: user.id, 
+      isAdmin: !user.isAdmin 
     });
   };
 
@@ -290,6 +334,7 @@ interface UsersTableProps {
   isLoading: boolean;
   onDeleteUser: (user: User) => void;
   onToggleVanOwner: (user: User) => void;
+  onToggleAdmin: (user: User) => void;
   toggleLoading: boolean;
 }
 
@@ -298,6 +343,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
   isLoading, 
   onDeleteUser,
   onToggleVanOwner,
+  onToggleAdmin,
   toggleLoading
 }) => {
   if (isLoading) {
@@ -338,11 +384,17 @@ const UsersTable: React.FC<UsersTableProps> = ({
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.username}</TableCell>
               <TableCell>
-                {user.isVanOwner ? (
-                  <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Van Owner</Badge>
-                ) : (
-                  <Badge variant="outline">Customer</Badge>
-                )}
+                <div className="flex space-x-2">
+                  {user.isVanOwner && (
+                    <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Van Owner</Badge>
+                  )}
+                  {user.isAdmin && (
+                    <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Admin</Badge>
+                  )}
+                  {!user.isVanOwner && !user.isAdmin && (
+                    <Badge variant="outline">Customer</Badge>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 {new Date(user.createdAt).toLocaleDateString()}

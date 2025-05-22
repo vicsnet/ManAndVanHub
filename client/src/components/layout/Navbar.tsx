@@ -89,6 +89,11 @@ const Navbar = () => {
                         </DropdownMenuItem>
                       </>
                     )}
+                    {user.isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin">Admin Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => logout()}>Logout</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -179,6 +184,15 @@ const Navbar = () => {
                       </div>
                     </Link>
                   </>
+                )}
+                {user.isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100"
+                    onClick={closeMobileMenu}
+                  >
+                    Admin Dashboard
+                  </Link>
                 )}
                 <button
                   onClick={() => {
