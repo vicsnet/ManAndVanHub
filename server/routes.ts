@@ -386,9 +386,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Validate the input data
       const schemas = getSchemas();
+      const userId = user._id || user.id;
       const data = schemas.insertVanListingSchema.parse({
         ...req.body,
-        userId: user._id || user.id // Support both MongoDB and PostgreSQL
+        userId: userId.toString ? userId.toString() : userId // Convert ObjectId to string
       });
       
       const listing = await storage.createVanListing(data);
