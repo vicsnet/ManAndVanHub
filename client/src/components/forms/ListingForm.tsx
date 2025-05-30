@@ -26,7 +26,7 @@ import { insertVanListingSchema } from "@shared/schema";
 // Extend the schema with additional validation and form-specific fields
 const listingFormSchema = insertVanListingSchema.extend({
   services: z.array(z.string()).min(1, "Please select at least one service"),
-  imageUrl: z.string().url("Please enter a valid image URL").optional(),
+  imageData: z.string().optional(),
 }).omit({ userId: true });
 
 type ListingFormValues = z.infer<typeof listingFormSchema>;

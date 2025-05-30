@@ -25,7 +25,7 @@ export const vanListings = pgTable("van_listings", {
   hourlyRate: doublePrecision("hourly_rate").notNull(),
   location: text("location").notNull(),
   postcode: text("postcode").notNull(),
-  imageUrl: text("image_url"),
+  imageData: text("image_data"), // Base64 encoded image
   helpersCount: integer("helpers_count").default(1),
   isAvailableToday: boolean("is_available_today").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),

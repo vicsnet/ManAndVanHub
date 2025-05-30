@@ -23,7 +23,7 @@ export interface VanListingDocument extends Document {
   hourlyRate: number;
   location: string;
   postcode: string;
-  imageUrl?: string;
+  imageData?: string; // Base64 encoded image
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,7 +85,7 @@ const vanListingSchema = new Schema<VanListingDocument>({
   hourlyRate: { type: Number, required: true },
   location: { type: String, required: true },
   postcode: { type: String, required: true },
-  imageUrl: { type: String },
+  imageData: { type: String }, // Base64 encoded image
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
