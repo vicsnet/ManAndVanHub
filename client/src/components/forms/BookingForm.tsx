@@ -87,7 +87,8 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
       queryClient.invalidateQueries({ queryKey: ["/api/my-bookings"] });
       
       // Navigate to booking confirmation page
-      navigate(`/booking-confirmation/${data.id}`);
+      const bookingId = (data as any)._id || data.id;
+      navigate(`/booking-confirmation/${bookingId}`);
     },
     onError: (error: any) => {
       toast({

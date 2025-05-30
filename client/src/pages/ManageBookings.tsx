@@ -76,7 +76,7 @@ const ManageBookings = () => {
 
   // Update booking status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number, status: string }) => {
+    mutationFn: async ({ id, status }: { id: string | number, status: string }) => {
       const response = await apiRequest("PATCH", `/api/bookings/${id}/status`, { status });
       return response.json();
     },
@@ -116,7 +116,8 @@ const ManageBookings = () => {
   // Update booking status
   const updateStatus = () => {
     if (selectedBooking && newStatus) {
-      updateStatusMutation.mutate({ id: selectedBooking.id, status: newStatus });
+      const bookingId = (selectedBooking as any)._id || selectedBooking.id;
+      updateStatusMutation.mutate({ id: bookingId, status: newStatus });
     }
   };
 
