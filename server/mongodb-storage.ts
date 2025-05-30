@@ -323,10 +323,16 @@ export class MongoDBStorage implements IStorage {
     }
   }
 
-  async getBooking(id: number): Promise<Booking | undefined> {
+  async getBooking(id: string | number): Promise<Booking | undefined> {
     try {
-      const booking = await BookingModel.findById(id);
-      return booking || undefined;
+      const booking = await BookingModel.findById(id).lean();
+      if (booking) {
+        return {
+          ...booking,
+          _id: booking._id.toString()
+        };
+      }
+      return undefined;
     } catch (error) {
       console.error('Error in getBooking:', error);
       return undefined;

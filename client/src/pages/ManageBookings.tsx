@@ -108,6 +108,7 @@ const ManageBookings = () => {
 
   // Open confirmation dialog to update booking status
   const confirmStatusChange = (booking: BookingWithListing, status: string) => {
+    console.log('Confirming status change:', { booking, status });
     setSelectedBooking(booking);
     setNewStatus(status);
     setStatusDialogOpen(true);
@@ -117,6 +118,7 @@ const ManageBookings = () => {
   const updateStatus = () => {
     if (selectedBooking && newStatus) {
       const bookingId = (selectedBooking as any)._id || selectedBooking.id;
+      console.log('Updating booking status:', { bookingId, newStatus });
       updateStatusMutation.mutate({ id: bookingId, status: newStatus });
     }
   };
