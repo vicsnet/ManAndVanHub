@@ -492,6 +492,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user as any;
       const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
       
+      // Debug logging
+      console.log('Booking request body:', JSON.stringify(req.body, null, 2));
+      console.log('User ID:', userId);
+      
       // Validate the input data
       const schemas = getSchemas();
       const data = schemas.insertBookingSchema.parse({
