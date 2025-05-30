@@ -85,7 +85,7 @@ const MyListings = () => {
         {listings && listings.length > 0 ? (
           <div className="grid grid-cols-1 gap-6">
             {listings.map((listing) => (
-              <Card key={listing.id} className="overflow-hidden">
+              <Card key={(listing as any)._id || listing.id} className="overflow-hidden">
                 <CardHeader className="pb-3">
                   <CardTitle>{listing.title}</CardTitle>
                   <CardDescription>
@@ -101,9 +101,9 @@ const MyListings = () => {
                     <div>
                       <p className="text-sm text-slate-500 mb-1">Services</p>
                       <div className="flex flex-wrap gap-1">
-                        {listing.services.map((service) => (
+                        {listing.services.map((service, index) => (
                           <span
-                            key={service.id}
+                            key={(service as any)._id || service.id || index}
                             className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
                           >
                             {service.serviceName}
@@ -121,7 +121,7 @@ const MyListings = () => {
                     <span>{listing.reviewCount || 0} reviews</span>
                   </div>
                   <Button variant="outline" asChild>
-                    <Link href={`/van-listing/${listing.id}`}>View Details</Link>
+                    <Link href={`/van-listing/${(listing as any)._id || listing.id}`}>View Details</Link>
                   </Button>
                 </CardFooter>
               </Card>
