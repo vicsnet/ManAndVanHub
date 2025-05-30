@@ -7,12 +7,38 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
+export async function apiRequest<T = any>(
+  url: string,
+  options?: RequestInit,
+): Promise<T> {
+  console.log('apiRequest called with:', { url, options });
+  
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      ...options?.headers,
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  console.log('Fetch response:', res.status, res.statusText);
+  
+  if (!res.ok) {
+    const text = (await res.text()) || res.statusText;
+    throw new Error(`${res.status}: ${text}`);
+  }
+  
+  return res.json();
+}
+
+// New function specifically for the ManageBookings mutation
+export async function apiRequestRaw(
   method: string,
   url: string,
   data?: any,
 ): Promise<Response> {
-  console.log('apiRequest called with:', { method, url, data });
+  console.log('apiRequestRaw called with:', { method, url, data });
   
   const options: RequestInit = {
     method,

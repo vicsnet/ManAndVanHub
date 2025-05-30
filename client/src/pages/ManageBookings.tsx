@@ -31,7 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { queryClient, apiRequestRaw } from "@/lib/queryClient";
 import { Booking } from "@shared/schema";
 import { CheckCircle, XCircle, Clock, Calendar, MapPin, User } from "lucide-react";
 
@@ -78,7 +78,7 @@ const ManageBookings = () => {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string | number, status: string }) => {
       console.log('Making API request with:', { id, status });
-      const response = await apiRequest("PATCH", `/api/bookings/${id}/status`, { status });
+      const response = await apiRequestRaw("PATCH", `/api/bookings/${id}/status`, { status });
       console.log('API response status:', response.status);
       if (!response.ok) {
         throw new Error(`Failed to update booking: ${response.status}`);
