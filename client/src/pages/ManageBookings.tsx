@@ -77,10 +77,16 @@ const ManageBookings = () => {
   // Update booking status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string | number, status: string }) => {
+      console.log('Making API request with:', { id, status });
       const response = await apiRequest("PATCH", `/api/bookings/${id}/status`, { status });
+      console.log('API response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`Failed to update booking: ${response.status}`);
+      }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutation success:', data);
       // Invalidate both booking queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/my-van-bookings"] });
       toast({
@@ -91,6 +97,7 @@ const ManageBookings = () => {
       setSelectedBooking(null);
     },
     onError: (error: any) => {
+      console.error('Mutation error:', error);
       toast({
         variant: "destructive",
         title: "Update failed",
