@@ -588,36 +588,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update booking status
   app.patch("/api/bookings/:id/status", isAuthenticated, async (req, res, next) => {
     try {
-      const user = req.user as any;
-      const id = req.params.id; // No need to parse for MongoDB
-      const userId = user._id || user.id; // Support both MongoDB and PostgreSQL
+      const id = req.params.id;
       const { status } = req.body;
       
       if (!status || !["pending", "confirmed", "completed", "cancelled"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
       
-      // Check if the booking exists
-      const booking = await storage.getBooking(id);
-      if (!booking) {
-        return res.status(404).json({ message: "Booking not found" });
-      }
-      
-      // Get string representations of IDs for comparison
-      const bookingUserId = booking.userId.toString ? booking.userId.toString() : booking.userId;
-      const userIdStr = userId.toString ? userId.toString() : userId;
-      
-      // Check if the user owns the booking or the van listing
-      const listing = await storage.getVanListing(booking.vanListingId);
-      const listingUserId = listing?.userId.toString ? listing.userId.toString() : listing?.userId;
-      
-      if (bookingUserId !== userIdStr && listingUserId !== userIdStr) {
-        return res.status(403).json({ message: "You don't have permission to update this booking" });
-      }
-      
+      // Update booking status directly
       const updatedBooking = await storage.updateBookingStatus(id, status);
+      if (!updatedBooking) {
+        return res.status(404).json({ message: "Booking not found or could not be updated" });
+      }
+      
       res.json(updatedBooking);
     } catch (error) {
+      console.error('Error updating booking status:', error);
       next(error);
     }
   });
