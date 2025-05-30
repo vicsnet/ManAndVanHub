@@ -547,7 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all bookings for all van listings owned by this user
       const allBookings = await Promise.all(
         vanListings.map(async (listing) => {
-          const listingId = listing.id;
+          const listingId = (listing as any)._id || listing.id;
           const bookings = await storage.getBookingsByVanListing(listingId);
           
           // Get customer details for each booking
@@ -559,7 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               return {
                 ...booking,
                 vanListing: {
-                  id: listing.id,
+                  id: (listing as any)._id || listing.id,
                   title: listing.title,
                   vanSize: listing.vanSize,
                   hourlyRate: listing.hourlyRate
