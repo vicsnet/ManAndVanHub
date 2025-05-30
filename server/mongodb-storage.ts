@@ -392,11 +392,16 @@ export class MongoDBStorage implements IStorage {
 
   async updateBookingStatus(id: string | number, status: string): Promise<Booking | undefined> {
     try {
+      console.log('MongoDB updateBookingStatus called with:', { id, status });
+      
+      // Direct MongoDB update using the string ID
       const updatedBooking = await BookingModel.findByIdAndUpdate(
         id,
-        { $set: { status } },
-        { new: true }
-      ).lean();
+        { status, updatedAt: new Date() },
+        { new: true, lean: true }
+      );
+      
+      console.log('MongoDB update result:', updatedBooking);
       
       if (updatedBooking) {
         return {
