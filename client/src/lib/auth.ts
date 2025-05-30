@@ -52,8 +52,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (data: Login) => {
-      const response = await apiRequest("POST", "/api/login", data);
-      return await response.json();
+      return await apiRequest("/api/login", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: (data) => {
       queryClient.setQueryData(["/api/me"], data);
@@ -78,8 +80,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (data: InsertUser) => {
-      const response = await apiRequest("POST", "/api/register", data);
-      return await response.json();
+      return await apiRequest("/api/register", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: (data) => {
       // Handle the new response format: { message: "Registration successful", user: ... }
@@ -106,8 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/logout", {});
-      return await response.json();
+      return await apiRequest("/api/logout", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/me"], null);
