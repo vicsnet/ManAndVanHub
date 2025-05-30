@@ -18,7 +18,7 @@ export class MongoDBStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     try {
       const user = await UserModel.findById(id);
-      return user || undefined;
+      return user ? user.toObject() : undefined;
     } catch (error) {
       console.error('Error in getUser:', error);
       return undefined;
@@ -28,7 +28,7 @@ export class MongoDBStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     try {
       const user = await UserModel.findOne({ email });
-      return user || undefined;
+      return user ? user.toObject() : undefined;
     } catch (error) {
       console.error('Error in getUserByEmail:', error);
       return undefined;
@@ -45,7 +45,9 @@ export class MongoDBStorage implements IStorage {
       
       const newUser = new UserModel(userWithHashedPassword);
       await newUser.save();
-      return newUser;
+      
+      // Convert Mongoose document to plain object
+      return newUser.toObject();
     } catch (error) {
       console.error('Error in createUser:', error);
       throw error;

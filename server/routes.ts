@@ -80,8 +80,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serialize and deserialize user
   passport.serializeUser((user: any, done) => {
+    console.log('Serializing user:', JSON.stringify(user, null, 2));
     // Handle both MongoDB (_id) and PostgreSQL (id) formats
-    done(null, user._id || user.id);
+    const userId = user._id || user.id;
+    console.log('User ID for serialization:', userId);
+    if (!userId) {
+      return done(new Error('User ID not found for serialization'));
+    }
+    done(null, userId);
   });
   
   passport.deserializeUser(async (id: any, done) => {
@@ -178,12 +184,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove password before returning
       const { password: _password, ...safeUser } = user;
       
-      // Log the user in
-      req.login(safeUser, (err) => {
-        if (err) {
-          return next(err);
-        }
-        return res.status(201).json(safeUser);
+      // Return success without automatic login for now
+      return res.status(201).json({ 
+        message: "Registration successful", 
+        user: safeUser 
       });
     } catch (error) {
       if (error instanceof z.ZodError) {

@@ -82,15 +82,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return await response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["/api/me"], data);
+      // Handle the new response format: { message: "Registration successful", user: ... }
+      const userData = data.user || data;
+      queryClient.setQueryData(["/api/me"], userData);
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
       toast({
         title: "Account created",
-        description: "Your account has been successfully created.",
+        description: "Your account has been successfully created. Please log in to continue.",
       });
       
-      // Redirect to home page
-      navigate("/");
+      // Redirect to login page since auto-login is disabled
+      navigate("/login");
     },
     onError: (error: any) => {
       toast({
