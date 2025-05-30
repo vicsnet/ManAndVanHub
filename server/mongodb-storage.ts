@@ -384,14 +384,22 @@ export class MongoDBStorage implements IStorage {
     }
   }
 
-  async updateBookingStatus(id: number, status: string): Promise<Booking | undefined> {
+  async updateBookingStatus(id: string | number, status: string): Promise<Booking | undefined> {
     try {
       const updatedBooking = await BookingModel.findByIdAndUpdate(
         id,
         { $set: { status } },
         { new: true }
-      );
-      return updatedBooking || undefined;
+      ).lean();
+      
+      if (updatedBooking) {
+        return {
+          ...updatedBooking,
+          _id: updatedBooking._id.toString()
+        };
+      }
+      
+      return undefined;
     } catch (error) {
       console.error('Error in updateBookingStatus:', error);
       return undefined;

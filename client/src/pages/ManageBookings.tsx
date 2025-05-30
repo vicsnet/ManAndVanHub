@@ -208,7 +208,7 @@ const ManageBookings = () => {
               {filteredBookings.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6">
                   {filteredBookings.map((booking) => (
-                    <Card key={booking.id} className="overflow-hidden">
+                    <Card key={(booking as any)._id || booking.id} className="overflow-hidden">
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start">
                           <div>
@@ -310,7 +310,7 @@ const ManageBookings = () => {
                         )}
                         
                         <ChatButton 
-                          bookingId={booking.id} 
+                          bookingId={(booking as any)._id || booking.id} 
                           variant="outline"
                           label={booking.status === "cancelled" ? "View Messages" : "Messages"}
                         />
