@@ -43,6 +43,61 @@ const ListingForm = () => {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Function to convert image to base64
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result && typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert image to base64'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Error reading file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Handle image file selection
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please select an image file (JPG, PNG, etc.)",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: "Please select an image under 5MB",
+      });
+      return;
+    }
+
+    try {
+      const base64String = await convertImageToBase64(file);
+      form.setValue('imageData', base64String);
+      setImagePreview(base64String);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error processing image",
+        description: "Failed to process the selected image",
+      });
+    }
+  };
   
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
@@ -53,7 +108,7 @@ const ListingForm = () => {
       hourlyRate: 25,
       location: "",
       postcode: "",
-      imageUrl: "",
+      imageData: "",
       helpersCount: 1,
       isAvailableToday: true,
       services: [],
@@ -63,11 +118,13 @@ const ListingForm = () => {
   const createListingMutation = useMutation({
     mutationFn: async (data: ListingFormValues & { userId: number }) => {
       const { services, ...listingData } = data;
-      const response = await apiRequest("POST", "/api/van-listings", {
-        ...listingData,
-        services: services
+      return await apiRequest("/api/van-listings", {
+        method: "POST",
+        body: JSON.stringify({
+          ...listingData,
+          services: services
+        }),
       });
-      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -273,18 +330,41 @@ const ListingForm = () => {
           
           <FormField
             control={form.control}
-            name="imageUrl"
+            name="imageData"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Van Image URL</FormLabel>
+                <FormLabel>Van Image</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="https://example.com/your-van-image.jpg" 
-                    {...field} 
-                  />
+                  <div className="space-y-4">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    {imagePreview && (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Van preview"
+                          className="w-full max-w-md h-48 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagePreview(null);
+                            form.setValue('imageData', '');
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
                 <FormDescription>
-                  A link to an image of your van (optional but recommended)
+                  Upload an image to showcase your van (Max 5MB, optional but recommended)
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -83,11 +83,20 @@ const ListingDetails = () => {
             </a>
           </Button>
           <div className="relative rounded-lg overflow-hidden">
-            <img
-              src={listing.imageUrl}
-              alt={listing.title}
-              className="w-full h-96 object-cover"
-            />
+            {listing.imageData ? (
+              <img
+                src={listing.imageData}
+                alt={listing.title}
+                className="w-full h-96 object-cover"
+              />
+            ) : (
+              <div className="w-full h-96 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">🚐</div>
+                  <p className="text-gray-500">No image available</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
