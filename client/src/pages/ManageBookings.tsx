@@ -238,7 +238,14 @@ const ManageBookings = () => {
                               <div>
                                 <p className="text-sm text-slate-500 mb-1">Date & Time</p>
                                 <p className="font-medium">
-                                  {format(new Date(booking.bookingDate), "MMMM d, yyyy")} • {booking.duration} hour{booking.duration > 1 ? "s" : ""}
+                                  {(() => {
+                                    try {
+                                      const date = new Date(booking.bookingDate);
+                                      return isNaN(date.getTime()) ? "Invalid date" : format(date, "MMMM d, yyyy");
+                                    } catch {
+                                      return "Invalid date";
+                                    }
+                                  })()} • {booking.duration} hour{booking.duration > 1 ? "s" : ""}
                                 </p>
                               </div>
                             </div>

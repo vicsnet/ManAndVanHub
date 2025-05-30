@@ -373,7 +373,11 @@ export class MongoDBStorage implements IStorage {
 
   async getBookingsByVanListing(vanListingId: number): Promise<Booking[]> {
     try {
-      return await BookingModel.find({ vanListingId });
+      const bookings = await BookingModel.find({ vanListingId }).lean();
+      return bookings.map(booking => ({
+        ...booking,
+        _id: booking._id.toString()
+      }));
     } catch (error) {
       console.error('Error in getBookingsByVanListing:', error);
       return [];
