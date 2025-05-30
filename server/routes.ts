@@ -585,30 +585,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update booking status
-  app.patch("/api/bookings/:id/status", isAuthenticated, async (req, res, next) => {
+  // Test route for debugging
+  app.patch("/api/bookings/:id/status", async (req, res, next) => {
     try {
+      console.log('=== PATCH REQUEST RECEIVED ===');
+      console.log('Route params:', req.params);
+      console.log('Request body:', req.body);
+      console.log('User authenticated:', !!req.user);
+      console.log('User details:', req.user);
+      
       const id = req.params.id;
       const { status } = req.body;
       
-      console.log('Booking status update request:', { id, status });
+      if (!req.user) {
+        console.log('Authentication failed - no user');
+        return res.status(401).json({ message: "Not authenticated" });
+      }
       
       if (!status || !["pending", "confirmed", "completed", "cancelled"].includes(status)) {
+        console.log('Invalid status provided:', status);
         return res.status(400).json({ message: "Invalid status" });
       }
       
-      // Update booking status directly
+      console.log('Calling storage.updateBookingStatus...');
       const updatedBooking = await storage.updateBookingStatus(id, status);
-      console.log('Update result:', updatedBooking);
+      console.log('Storage update result:', updatedBooking);
       
       if (!updatedBooking) {
+        console.log('No booking found or update failed');
         return res.status(404).json({ message: "Booking not found or could not be updated" });
       }
       
+      console.log('Success! Returning updated booking');
       res.json(updatedBooking);
     } catch (error) {
-      console.error('Error updating booking status:', error);
-      next(error);
+      console.error('Error in booking status update route:', error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
     }
   });
   
