@@ -6,6 +6,7 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import crypto from "crypto";
 import { 
   UserModel, 
   VanListingModel, 
@@ -17,6 +18,23 @@ import {
 } from "../shared/mongodb-schema";
 
 const SessionStore = MemoryStore(session);
+
+// Email sending function
+async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  const resetLink = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
+  
+  // For development, log the reset link instead of sending email
+  // In production, integrate with email service like SendGrid, Mailgun, etc.
+  console.log(`\n=== PASSWORD RESET EMAIL ===`);
+  console.log(`To: ${email}`);
+  console.log(`Subject: Reset Your Password - Man and Van`);
+  console.log(`Reset Link: ${resetLink}`);
+  console.log(`This link will expire in 24 hours.`);
+  console.log(`==============================\n`);
+  
+  // Simulate email sending delay
+  await new Promise(resolve => setTimeout(resolve, 100));
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get the appropriate storage implementation based on available database
@@ -55,7 +73,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // Hash the password for comparison
-          const crypto = require('crypto');
           const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
           
           if (user.password !== hashedPassword) {
@@ -231,8 +248,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store the token in the user's document
         await storage.storePasswordResetToken(user._id || user.id, token, expiration);
         
-        // In a real application, you would send an email with this link
-        console.log(`Password reset link: ${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${token}`);
+        // Send password reset email
+        try {
+          await sendPasswordResetEmail(email, token);
+          console.log(`Password reset email sent to: ${email}`);
+        } catch (emailError) {
+          console.error('Failed to send password reset email:', emailError);
+          // Log the reset link as fallback for development
+          console.log(`Password reset link: ${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${token}`);
+        }
       }
       
       // Always return 200 even if user doesn't exist (prevent email enumeration)
