@@ -13,11 +13,20 @@ const ListingCard = ({ listing }: ListingCardProps) => {
   return (
     <Card className="bg-white rounded-lg shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-shadow duration-300">
       <Link href={`/van-listing/${listing.id}`}>
-        <img
-          src={listing.imageUrl}
-          alt={listing.title}
-          className="w-full h-48 object-cover cursor-pointer"
-        />
+        {listing.imageData ? (
+          <img
+            src={listing.imageData}
+            alt={listing.title}
+            className="w-full h-48 object-cover cursor-pointer"
+          />
+        ) : (
+          <div className="w-full h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center cursor-pointer">
+            <div className="text-center">
+              <div className="text-4xl mb-2">🚐</div>
+              <p className="text-gray-500 text-sm">No image</p>
+            </div>
+          </div>
+        )}
       </Link>
       
       <CardContent className="p-4">

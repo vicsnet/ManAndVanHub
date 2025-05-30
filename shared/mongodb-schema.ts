@@ -151,7 +151,7 @@ export const vanListingValidationSchema = z.object({
   hourlyRate: z.number().positive(),
   location: z.string().min(2),
   postcode: z.string().min(5),
-  imageUrl: z.string().optional(),
+  imageData: z.string().optional(),
 });
 
 export const serviceValidationSchema = z.object({
