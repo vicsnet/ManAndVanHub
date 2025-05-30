@@ -380,6 +380,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as any;
       
+      // Debug logging
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+      console.log('User ID:', user._id || user.id);
+      
       // Validate the input data
       const schemas = getSchemas();
       const data = schemas.insertVanListingSchema.parse({
