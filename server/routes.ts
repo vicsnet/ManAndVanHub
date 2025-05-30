@@ -591,12 +591,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = req.params.id;
       const { status } = req.body;
       
+      console.log('Booking status update request:', { id, status });
+      
       if (!status || !["pending", "confirmed", "completed", "cancelled"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
       
       // Update booking status directly
       const updatedBooking = await storage.updateBookingStatus(id, status);
+      console.log('Update result:', updatedBooking);
+      
       if (!updatedBooking) {
         return res.status(404).json({ message: "Booking not found or could not be updated" });
       }
