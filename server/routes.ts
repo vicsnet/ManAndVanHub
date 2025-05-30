@@ -496,7 +496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schemas = getSchemas();
       const data = schemas.insertBookingSchema.parse({
         ...req.body,
-        userId: userId
+        userId: userId.toString ? userId.toString() : userId // Convert ObjectId to string
       });
       
       // Check if the van listing exists

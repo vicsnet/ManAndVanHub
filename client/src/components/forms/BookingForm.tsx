@@ -72,8 +72,10 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
   
   const createBookingMutation = useMutation({
     mutationFn: async (data: BookingFormData) => {
-      const response = await apiRequest("POST", "/api/bookings", data);
-      return response.json();
+      return await apiRequest("/api/bookings", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: (data) => {
       toast({
@@ -109,7 +111,7 @@ const BookingForm = ({ vanListing, open = false, setOpen }: BookingFormProps) =>
     }
     
     const bookingData: BookingFormData = {
-      vanListingId: vanListing.id,
+      vanListingId: (vanListing as any)._id || vanListing.id,
       bookingDate: data.bookingDate,
       duration: data.duration,
       fromLocation: data.fromLocation,
