@@ -10,9 +10,11 @@ interface ListingCardProps {
 }
 
 const ListingCard = ({ listing }: ListingCardProps) => {
+  const listingId = (listing as any)._id || listing.id;
+  
   return (
     <Card className="bg-white rounded-lg shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition-shadow duration-300">
-      <Link href={`/van-listing/${listing.id}`}>
+      <Link href={`/van-listing/${listingId}`}>
         {listing.imageData ? (
           <img
             src={listing.imageData}
@@ -31,7 +33,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
       
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <Link href={`/van-listing/${listing.id}`}>
+          <Link href={`/van-listing/${listingId}`}>
             <h3 className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors">
               {listing.title}
             </h3>
@@ -82,7 +84,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
             {listing.isAvailableToday ? "Available today" : "Available from tomorrow"}
           </span>
           <Button asChild size="sm">
-            <Link href={`/van-listing/${listing.id}`}>Book Now</Link>
+            <Link href={`/van-listing/${listing._id || listing.id}`}>Book Now</Link>
           </Button>
         </div>
       </CardContent>
