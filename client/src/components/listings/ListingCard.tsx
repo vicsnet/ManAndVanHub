@@ -72,7 +72,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
             </Badge>
           ))}
           
-          {listing.helpersCount > 0 && (
+          {listing.helpersCount && listing.helpersCount > 0 && (
             <Badge variant="outline" className="bg-blue-100 text-primary border-none">
               {listing.helpersCount} {listing.helpersCount === 1 ? "Helper" : "Helpers"}
             </Badge>
@@ -84,7 +84,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
             {listing.isAvailableToday ? "Available today" : "Available from tomorrow"}
           </span>
           <Button asChild size="sm">
-            <Link href={`/van-listing/${listing._id || listing.id}`}>Book Now</Link>
+            <Link href={`/van-listing/${listingId}`}>Book Now</Link>
           </Button>
         </div>
       </CardContent>
